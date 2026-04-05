@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Game</title>
+
+<!-- Fonts + Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background: linear-gradient(135deg,#141E30,#243B55);
+  color:white;
+  text-align:center;
+}
+
+.container {
+  padding:20px;
+}
+
+h1 {
+  font-size:28px;
+  margin-bottom:20px;
+}
+
+.card {
+  background: rgba(255,255,255,0.1);
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 0 20px rgba(0,0,0,0.3);
+  margin:20px;
+}
+
+button {
+  padding:12px 18px;
+  margin:8px;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.btn-main {
+  background:#00c6ff;
+  color:black;
+}
+
+.btn-main:hover {
+  background:#00a6d6;
+}
+
+.option {
+  background: rgba(255,255,255,0.15);
+  margin:10px;
+  padding:12px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.option:hover {
+  background:#00c6ff;
+  color:black;
+}
+
+#timer {
+  font-size:18px;
+  margin-top:10px;
+}
+
+#score {
+  font-size:20px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🎯 Quiz Master</h1>
+
+<!-- LOGIN -->
+<div id="login" class="card">
+  <h2>👤 Login</h2>
+  <button class="btn-main" onclick="login()">🔑 Sign in with Google</button>
+</div>
+
+<!-- CATEGORY -->
+<div id="menu" class="card" style="display:none;">
+  <h2>📚 Choose Category</h2>
+  <button class="btn-main" onclick="startGame('GK')">🌍 GK</button>
+  <button class="btn-main" onclick="startGame('Sports')">🏏 Sports</button>
+  <button class="btn-main" onclick="startGame('Bollywood')">🎬 Bollywood</button>
+  <button class="btn-main" onclick="startGame('Science')">🔬 Science</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="card" style="display:none;">
+  <h2 id="question">Question</h2>
+  <div id="options"></div>
+  <div id="timer">⏳ Time: 10</div>
+  <div id="score">Score: 0</div>
+</div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+
+<script>
+
+// 🔥 YOUR CONFIG (FIXED)
+const firebaseConfig = {
+  apiKey: "AIzaSyCkSNiFrju355cCtsby_SHCJuTfMkDbNQM",
+  authDomain: "quiz-game-app-ba331.firebaseapp.com",
+  projectId: "quiz-game-app-ba331",
+  storageBucket: "quiz-game-app-ba331.firebasestorage.app",
+  messagingSenderId: "370473953623",
+  appId: "1:370473953623:web:7f4c9612b7c029e0c4b612"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+let questions = [];
+let currentQ;
+let score = 0;
+let timer;
+
+// 🔐 LOGIN
+function login() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(() => {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("menu").style.display = "block";
+    })
+    .catch(err => alert(err.message));
+}
+
+// 🎮 START GAME
+async function startGame(category) {
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("quiz").style.display = "block";
+
+  const snapshot = await db.collection("questions")
+    .where("category", "==", category)
+    .get();
+
+  questions = snapshot.docs.map(doc => doc.data());
+
+  score = 0;
+  nextQ();
+}
+
+// 🔄 NEXT QUESTION
+function nextQ() {
+  if (questions.length === 0) {
+    alert("Game Over! Score: " + score);
+    location.reload();
+    return;
+  }
+
+  const index = Math.floor(Math.random()*questions.length);
+  currentQ = questions[index];
+  questions.splice(index,1);
+
+  document.getElementById("question").innerText = currentQ.question_en;
+
+  let html = "";
+  currentQ.options.forEach((opt,i)=>{
+    html += `<div class="option" onclick="check(${i})">${opt}</div>`;
+  });
+
+  document.getElementById("options").innerHTML = html;
+
+  startTimer();
+}
+
+// ✅ CHECK ANSWER
+function check(i) {
+  clearInterval(timer);
+
+  if(i === currentQ.answer){
+    score++;
+  }
+
+  document.getElementById("score").innerText = "Score: " + score;
+
+  nextQ();
+}
+
+// ⏳ TIMER
+function startTimer() {
+  let time = 10;
+  document.getElementById("timer").innerText = "⏳ Time: " + time;
+
+  timer = setInterval(()=>{
+    time--;
+    document.getElementById("timer").innerText = "⏳ Time: " + time;
+
+    if(time === 0){
+      clearInterval(timer);
+      nextQ();
+    }
+  },1000);
+}
+
+</script>
+
+</body>
+</html>
