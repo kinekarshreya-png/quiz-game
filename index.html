@@ -1035,29 +1035,72 @@ h2 {
   </div>
 
   <!-- ══════════════════════════════════════════
-       SCREEN 4: MODE
+       SCREEN 4: MODE (includes lang + category)
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-mode">
-    <div class="card">
-      <p class="section-title">Step 3 of 3</p>
-      <h2>🎮 Choose Mode</h2>
-      <p style="color:var(--sub);font-size:13px;margin-bottom:18px;">How do you want to play?</p>
 
+    <!-- Language row -->
+    <div class="card" style="padding:18px 20px;">
+      <p class="section-title">🌐 Language</p>
+      <div class="lang-grid">
+        <div class="lang-btn selected" onclick="selectLang('English', this)">🇬🇧 English</div>
+        <div class="lang-btn" onclick="selectLang('Hindi', this)">🇮🇳 हिन्दी</div>
+        <div class="lang-btn" onclick="selectLang('Marathi', this)">🔵 मराठी</div>
+        <div class="lang-btn" onclick="selectLang('Bengali', this)">🟡 বাংলা</div>
+        <div class="lang-btn" onclick="selectLang('Tamil', this)">🔴 தமிழ்</div>
+        <div class="lang-btn" onclick="selectLang('Gujarati', this)">🟠 ગુજરાતી</div>
+      </div>
+    </div>
+
+    <!-- Category row -->
+    <div class="card" style="padding:18px 20px;">
+      <p class="section-title">📚 Category</p>
+      <div class="cat-grid">
+        <div class="cat-card gk" onclick="selectCat('GK', this)">
+          <div class="cat-icon">🌍</div>
+          <div class="cat-name">GK</div>
+        </div>
+        <div class="cat-card sports" onclick="selectCat('Sports', this)">
+          <div class="cat-icon">🏏</div>
+          <div class="cat-name">Sports</div>
+        </div>
+        <div class="cat-card bollywood" onclick="selectCat('Bollywood', this)">
+          <div class="cat-icon">🎬</div>
+          <div class="cat-name">Bollywood</div>
+        </div>
+        <div class="cat-card science" onclick="selectCat('Science', this)">
+          <div class="cat-icon">🔬</div>
+          <div class="cat-name">Science</div>
+        </div>
+        <div class="cat-card songs" onclick="selectCat('Songs', this)">
+          <div class="cat-icon">🎵</div>
+          <div class="cat-name">Songs</div>
+        </div>
+        <div class="cat-card history" onclick="selectCat('History', this)">
+          <div class="cat-icon">📜</div>
+          <div class="cat-name">History</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode selection -->
+    <div class="card" style="padding:18px 20px;">
+      <p class="section-title">🎮 Mode</p>
       <div class="mode-grid">
         <div class="mode-card freerun" onclick="selectMode('freerun', this)">
           <div class="mode-icon">♾️</div>
           <div class="mode-name">Free Run</div>
-          <div class="mode-desc">Endless questions, no time limit. Go as far as you can!</div>
+          <div class="mode-desc">Endless questions. Go as far as you can!</div>
         </div>
         <div class="mode-card timebound" onclick="selectMode('timebound', this)">
           <div class="mode-icon">⏱️</div>
           <div class="mode-name">Time Bound</div>
-          <div class="mode-desc">10 or 20 questions. Beat the clock each round!</div>
+          <div class="mode-desc">Fixed questions. Beat the clock!</div>
         </div>
       </div>
 
-      <!-- Settings (shown for timebound) -->
-      <div id="timeboundSettings" style="display:none">
+      <!-- Time Bound settings -->
+      <div id="timeboundSettings" style="display:none; margin-top:12px;">
         <div class="settings-row">
           <span class="settings-label">Questions</span>
           <div class="pill-group">
@@ -1077,11 +1120,11 @@ h2 {
         </div>
       </div>
 
-      <button class="btn btn-pink btn-full" id="startBtn" onclick="startGame()" style="display:none; margin-top:10px;">
+      <button class="btn btn-pink btn-full" id="startBtn" onclick="startGame()" style="display:none; margin-top:14px;">
         🚀 Start Game
       </button>
-      <button class="btn btn-ghost btn-full" onclick="showScreen('screen-category')">← Back</button>
     </div>
+
   </div>
 
   <!-- ══════════════════════════════════════════
@@ -1134,9 +1177,18 @@ h2 {
     </div>
 
     <!-- Question -->
-    <div class="card" style="padding:20px">
-      <div class="question-text" id="questionText">Loading question...</div>
+    <div class="card" style="padding:22px 20px;">
+      <p style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--sub);text-transform:uppercase;margin-bottom:12px;">Question</p>
+      <div class="question-text" id="questionText" style="min-height:70px;">Loading question...</div>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:16px 0;"></div>
       <div class="options-list" id="optionsList"></div>
+    </div>
+
+    <!-- Free Run: Stop Button (shown above powerups) -->
+    <div id="freerunStop" style="display:none; text-align:center; margin:14px 0 6px;">
+      <button class="btn btn-full" onclick="endFreeRun()" style="background:rgba(255,68,68,0.15);border:1.5px solid rgba(255,68,68,0.4);color:#ff6b6b;font-weight:800;">
+        ⛔ Stop & See My Results
+      </button>
     </div>
 
     <!-- Power-ups -->
@@ -1168,10 +1220,6 @@ h2 {
       📢 Advertisement — Google AdMob
     </div>
 
-    <!-- Free Run: Stop Button -->
-    <div id="freerunStop" style="display:none; text-align:center; margin-top:10px;">
-      <button class="btn btn-ghost" onclick="endFreeRun()">⛔ Stop & See Results</button>
-    </div>
   </div>
 
   <!-- ══════════════════════════════════════════
@@ -1273,6 +1321,7 @@ let state = {
   timerInterval: null,
   timeLeft: 10,
   isFrozen: false,
+  masterQuestions: [],
 };
 
 // ╔════════════════════════════════════════╗
@@ -1389,7 +1438,7 @@ function onUserReady(user) {
     updateCoinDisplay();
   }).catch(() => { updateCoinDisplay(); });
 
-  showScreen('screen-language');
+  showScreen('screen-mode');
 }
 
 function login() {
@@ -1431,7 +1480,7 @@ document.addEventListener('click', e => {
 
 function guestLogin() {
   document.getElementById('userAvatarWrap').style.display = 'none';
-  showScreen('screen-language');
+  showScreen('screen-mode');
 }
 
 // ╔════════════════════════════════════════╗
@@ -1454,7 +1503,11 @@ function selectCat(cat, el) {
   document.querySelectorAll('.cat-card').forEach(c => c.style.borderColor = '');
   el.style.borderColor = 'var(--cyan)';
   state.category = cat;
-  document.getElementById('catNextBtn').style.display = 'block';
+  // Show start if mode already picked
+  if (state.mode) document.getElementById('startBtn').style.display = 'block';
+  // Keep old catNextBtn if it exists (on old category screen)
+  const nb = document.getElementById('catNextBtn');
+  if (nb) nb.style.display = 'block';
 }
 
 function goToMode() {
@@ -1470,7 +1523,8 @@ function selectMode(mode, el) {
   el.classList.add('selected');
   state.mode = mode;
   document.getElementById('timeboundSettings').style.display = mode === 'timebound' ? 'block' : 'none';
-  document.getElementById('startBtn').style.display = 'block';
+  // Show start button only when category is also picked
+  document.getElementById('startBtn').style.display = state.category ? 'block' : 'none';
 }
 
 function setQCount(n, el) {
@@ -1573,39 +1627,113 @@ const demoQuestions = {
 //   START GAME
 // ╚════════════════════════════════════════╝
 async function startGame() {
-  if (!state.mode) { showToast('Select a game mode!'); return; }
+  if (!state.mode)     { showToast('Select a game mode!'); return; }
+  if (!state.category) { showToast('Please select a category!'); return; }
 
   // Reset state
-  state.score = 0;
-  state.rightCount = 0;
-  state.wrongCount = 0;
-  state.skipCount = 0;
-  state.streak = 0;
-  state.wrongAnswers = [];
+  state.score = 0; state.rightCount = 0; state.wrongCount = 0;
+  state.skipCount = 0; state.streak = 0; state.wrongAnswers = [];
   state.qIndex = 0;
   clearInterval(state.timerInterval);
 
+  // Show quiz screen with loading state
   showScreen('screen-quiz');
-
   document.getElementById('qCatBadge').textContent = state.category;
   document.getElementById('freerunStop').style.display = state.mode === 'freerun' ? 'block' : 'none';
+  document.getElementById('questionText').textContent = 'Loading questions...';
+  document.getElementById('optionsList').innerHTML = '';
+  updateScoreRow();
 
-  // Try to load from Firestore, fall back to demo
+  // ── FIRESTORE FETCH ──────────────────────────────────────────
+  // Strategy: fetch ALL docs from 'questions', log the first one
+  // so you can see exact field names, then filter by category.
   try {
-    const snap = await db.collection('questions')
+    // First try: query with category filter (works if field is exactly 'category')
+    let snap = await db.collection('questions')
       .where('category', '==', state.category)
       .get();
-    if (snap.docs.length > 0) {
+
+    // If zero results, try fetching ALL and filtering manually
+    // (handles cases where Firestore field is named differently)
+    if (snap.empty) {
+      console.warn(`⚠️ No docs found with category == "${state.category}". Fetching ALL docs...`);
+      const allSnap = await db.collection('questions').get();
+
+      if (!allSnap.empty) {
+        // Log first doc so you can see the exact field structure
+        const firstData = allSnap.docs[0].data();
+        console.log('📄 Sample Firestore doc:', JSON.stringify(firstData, null, 2));
+        console.log('📌 All fields in doc:', Object.keys(firstData));
+
+        // Try to find which field holds the category value
+        const catField = ['category','Category','type','Type','subject','Subject','topic','Topic']
+          .find(f => firstData[f] !== undefined);
+        console.log('🔑 Detected category field:', catField, '→', firstData[catField]);
+
+        if (catField) {
+          // Filter manually — case-insensitive match
+          const filtered = allSnap.docs.filter(doc => {
+            const val = String(doc.data()[catField] || '').toLowerCase().trim();
+            const target = state.category.toLowerCase().trim();
+            return val === target || val.includes(target) || target.includes(val);
+          });
+          console.log(`✅ Found ${filtered.length} matching docs after manual filter`);
+
+          if (filtered.length > 0) {
+            snap = { docs: filtered, empty: false };
+          }
+        }
+
+        // If still nothing, just use ALL questions as fallback
+        if (!snap || snap.empty || snap.docs.length === 0) {
+          console.warn('⚠️ Using ALL questions as fallback (no category match)');
+          snap = allSnap;
+        }
+      }
+    }
+
+    if (!snap.empty && snap.docs.length > 0) {
+      // Log first doc fields for debugging
+      const sample = snap.docs[0].data();
+      console.log('📄 Using doc sample:', sample);
+
       state.questions = snap.docs.map(doc => {
         const d = doc.data();
-        return { q: d.questionen || d.question, opts: d.options, ans: d.answer };
-      });
+        // Try all common question field names
+        const qText = d.question   || d.questionen || d.questionEn  ||
+                      d.questionText || d.Question || d.text        ||
+                      d.Text || d.q || d.Q || '';
+        // Try all common options field names
+        const opts  = d.options    || d.Options    || d.choices     ||
+                      d.Choices    || d.answers    || d.Answers     || [];
+        // Try all common answer field names
+        const ans   = (d.answer         !== undefined) ? d.answer
+                    : (d.correctAnswer  !== undefined) ? d.correctAnswer
+                    : (d.correct_answer !== undefined) ? d.correct_answer
+                    : (d.correct        !== undefined) ? d.correct
+                    : (d.Answer         !== undefined) ? d.Answer : 0;
+
+        return { q: String(qText).trim(), opts: Array.isArray(opts) ? opts : [], ans: Number(ans) };
+      }).filter(q => q.q.length > 0 && q.opts.length >= 2);
+
+      console.log(`🎮 Loaded ${state.questions.length} valid questions`);
+
+      if (state.questions.length === 0) {
+        showToast('Questions found but fields unreadable. Check console.');
+        state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
+      }
     } else {
+      console.warn('No questions in Firestore at all — using demo data');
       state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
     }
   } catch(e) {
+    console.error('🔥 Firestore error:', e.message, e);
+    showToast('DB error — using sample questions');
     state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
   }
+
+  // Master copy for infinite Free Run recycling
+  state.masterQuestions = [...state.questions];
 
   // Shuffle
   state.questions.sort(() => Math.random() - 0.5);
@@ -1625,9 +1753,15 @@ function nextQuestion() {
   clearInterval(state.timerInterval);
   state.isFrozen = false;
 
+  // In Free Run: recycle questions when pool is exhausted
   if (state.questions.length === 0) {
-    endGame();
-    return;
+    if (state.mode === 'freerun') {
+      // Reshuffle master copy and keep going
+      state.questions = [...state.masterQuestions].sort(() => Math.random() - 0.5);
+    } else {
+      endGame();
+      return;
+    }
   }
 
   const idx = Math.floor(Math.random() * state.questions.length);
@@ -1869,14 +2003,13 @@ function playAgain() {
   state.mode = null;
   document.querySelectorAll('.cat-card').forEach(c => c.style.borderColor = '');
   document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('catNextBtn').style.display = 'none';
   document.getElementById('startBtn').style.display = 'none';
   document.getElementById('timeboundSettings').style.display = 'none';
-  showScreen('screen-category');
+  showScreen('screen-mode');
 }
 
 function goHome() {
-  showScreen('screen-language');
+  showScreen('screen-mode');
 }
 </script>
 
