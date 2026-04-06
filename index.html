@@ -1165,8 +1165,8 @@ h2 {
       </div>
     </div>
 
-    <!-- Timer -->
-    <div class="timer-wrap">
+    <!-- Timer (Time Bound only — hidden in Free Run) -->
+    <div class="timer-wrap" id="timerWrap">
       <div class="timer-ring">
         <svg width="70" height="70" viewBox="0 0 70 70">
           <circle class="timer-track" cx="35" cy="35" r="30"></circle>
@@ -1487,9 +1487,12 @@ function guestLogin() {
 //   LANGUAGE
 // ╚════════════════════════════════════════╝
 function selectLang(lang, el) {
+  // Deselect all lang buttons everywhere on the page
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   state.language = lang;
+  console.log('🌐 Language set to:', lang);
+  showToast('Language: ' + lang);
 }
 
 function goToCategory() {
@@ -1640,94 +1643,115 @@ async function startGame() {
   showScreen('screen-quiz');
   document.getElementById('qCatBadge').textContent = state.category;
   document.getElementById('freerunStop').style.display = state.mode === 'freerun' ? 'block' : 'none';
+  // Timer only shown in Time Bound mode
+  document.getElementById('timerWrap').style.display = state.mode === 'timebound' ? 'flex' : 'none';
+  // Freeze powerup only useful in Time Bound
+  document.getElementById('pu-freeze').style.display = state.mode === 'timebound' ? 'flex' : 'none';
   document.getElementById('questionText').textContent = 'Loading questions...';
   document.getElementById('optionsList').innerHTML = '';
   updateScoreRow();
 
   // ── FIRESTORE FETCH ──────────────────────────────────────────
-  // Strategy: fetch ALL docs from 'questions', log the first one
-  // so you can see exact field names, then filter by category.
+  // Tries category+language filter first, falls back to broader searches
   try {
-    // First try: query with category filter (works if field is exactly 'category')
-    let snap = await db.collection('questions')
-      .where('category', '==', state.category)
-      .get();
+    let questions = [];
 
-    // If zero results, try fetching ALL and filtering manually
-    // (handles cases where Firestore field is named differently)
-    if (snap.empty) {
-      console.warn(`⚠️ No docs found with category == "${state.category}". Fetching ALL docs...`);
+    // Attempt 1: filter by both category AND language
+    try {
+      const snap1 = await db.collection('questions')
+        .where('category', '==', state.category)
+        .where('language', '==', state.language)
+        .get();
+      if (!snap1.empty) {
+        questions = snap1.docs;
+        console.log(`✅ Found ${questions.length} docs (category+language filter)`);
+      }
+    } catch(e) { console.warn('category+language query failed:', e.message); }
+
+    // Attempt 2: category only
+    if (questions.length === 0) {
+      try {
+        const snap2 = await db.collection('questions')
+          .where('category', '==', state.category)
+          .get();
+        if (!snap2.empty) {
+          questions = snap2.docs;
+          console.log(`✅ Found ${questions.length} docs (category only)`);
+        }
+      } catch(e) { console.warn('category-only query failed:', e.message); }
+    }
+
+    // Attempt 3: fetch ALL, filter manually (handles any field naming)
+    if (questions.length === 0) {
+      console.warn('No results from indexed queries — fetching ALL docs and filtering manually');
       const allSnap = await db.collection('questions').get();
-
       if (!allSnap.empty) {
-        // Log first doc so you can see the exact field structure
-        const firstData = allSnap.docs[0].data();
-        console.log('📄 Sample Firestore doc:', JSON.stringify(firstData, null, 2));
-        console.log('📌 All fields in doc:', Object.keys(firstData));
+        const sample = allSnap.docs[0].data();
+        console.log('📄 Sample doc fields:', JSON.stringify(sample, null, 2));
 
-        // Try to find which field holds the category value
-        const catField = ['category','Category','type','Type','subject','Subject','topic','Topic']
-          .find(f => firstData[f] !== undefined);
-        console.log('🔑 Detected category field:', catField, '→', firstData[catField]);
+        // Detect category field name
+        const catField = ['category','Category','type','Type','subject','Subject']
+          .find(f => sample[f] !== undefined) || 'category';
+        // Detect language field name  
+        const langField = ['language','Language','lang','Lang']
+          .find(f => sample[f] !== undefined) || 'language';
+        console.log(`🔑 catField="${catField}", langField="${langField}"`);
 
-        if (catField) {
-          // Filter manually — case-insensitive match
-          const filtered = allSnap.docs.filter(doc => {
-            const val = String(doc.data()[catField] || '').toLowerCase().trim();
-            const target = state.category.toLowerCase().trim();
-            return val === target || val.includes(target) || target.includes(val);
+        const catTarget  = state.category.toLowerCase().trim();
+        const langTarget = state.language.toLowerCase().trim();
+
+        // Filter by category + language
+        let filtered = allSnap.docs.filter(doc => {
+          const d = doc.data();
+          const catVal  = String(d[catField]  || '').toLowerCase().trim();
+          const langVal = String(d[langField] || '').toLowerCase().trim();
+          return (catVal === catTarget || catVal.includes(catTarget)) &&
+                 (langVal === langTarget || langVal.includes(langTarget));
+        });
+
+        // If no language match, just filter by category
+        if (filtered.length === 0) {
+          filtered = allSnap.docs.filter(doc => {
+            const catVal = String(doc.data()[catField] || '').toLowerCase().trim();
+            return catVal === catTarget || catVal.includes(catTarget);
           });
-          console.log(`✅ Found ${filtered.length} matching docs after manual filter`);
-
-          if (filtered.length > 0) {
-            snap = { docs: filtered, empty: false };
-          }
+          console.warn(`No language match — using ${filtered.length} docs with category only`);
         }
 
-        // If still nothing, just use ALL questions as fallback
-        if (!snap || snap.empty || snap.docs.length === 0) {
-          console.warn('⚠️ Using ALL questions as fallback (no category match)');
-          snap = allSnap;
-        }
+        questions = filtered.length > 0 ? filtered : allSnap.docs;
+        console.log(`✅ After manual filter: ${questions.length} docs`);
       }
     }
 
-    if (!snap.empty && snap.docs.length > 0) {
-      // Log first doc fields for debugging
-      const sample = snap.docs[0].data();
-      console.log('📄 Using doc sample:', sample);
+    if (questions.length > 0) {
+      const sample = questions[0].data ? questions[0].data() : questions[0];
+      console.log('📄 Using sample:', sample);
 
-      state.questions = snap.docs.map(doc => {
-        const d = doc.data();
-        // Try all common question field names
+      state.questions = questions.map(doc => {
+        const d = doc.data ? doc.data() : doc;
         const qText = d.question   || d.questionen || d.questionEn  ||
-                      d.questionText || d.Question || d.text        ||
-                      d.Text || d.q || d.Q || '';
-        // Try all common options field names
-        const opts  = d.options    || d.Options    || d.choices     ||
-                      d.Choices    || d.answers    || d.Answers     || [];
-        // Try all common answer field names
+                      d.questionText || d.Question || d.text || d.q || '';
+        const opts  = d.options    || d.Options    || d.choices      ||
+                      d.Choices    || d.answers    || d.Answers      || [];
         const ans   = (d.answer         !== undefined) ? d.answer
                     : (d.correctAnswer  !== undefined) ? d.correctAnswer
                     : (d.correct_answer !== undefined) ? d.correct_answer
                     : (d.correct        !== undefined) ? d.correct
                     : (d.Answer         !== undefined) ? d.Answer : 0;
-
         return { q: String(qText).trim(), opts: Array.isArray(opts) ? opts : [], ans: Number(ans) };
       }).filter(q => q.q.length > 0 && q.opts.length >= 2);
 
-      console.log(`🎮 Loaded ${state.questions.length} valid questions`);
-
+      console.log(`🎮 ${state.questions.length} valid questions ready`);
       if (state.questions.length === 0) {
-        showToast('Questions found but fields unreadable. Check console.');
+        showToast('Questions found but fields unreadable — check console');
         state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
       }
     } else {
-      console.warn('No questions in Firestore at all — using demo data');
+      console.warn('Firestore empty — using demo data');
       state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
     }
   } catch(e) {
-    console.error('🔥 Firestore error:', e.message, e);
+    console.error('🔥 Firestore error:', e.message);
     showToast('DB error — using sample questions');
     state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
   }
@@ -1816,6 +1840,9 @@ function nextQuestion() {
 //   TIMER
 // ╚════════════════════════════════════════╝
 function startTimer() {
+  // Free Run has no timer at all
+  if (state.mode === 'freerun') return;
+
   state.timeLeft = state.timePerQ;
   updateTimerUI(state.timeLeft);
 
