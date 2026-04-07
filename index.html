@@ -1325,8 +1325,40 @@ let state = {
 };
 
 // ╔════════════════════════════════════════╗
-//   PARTICLES
+//   DIAGNOSTIC — runs once on load after auth
+//   Shows exact Firestore field names in console
 // ╚════════════════════════════════════════╝
+async function runDiagnostic() {
+  try {
+    const snap = await db.collection('questions').limit(3).get();
+    if (snap.empty) { console.warn('🔴 questions collection is empty!'); return; }
+
+    console.group('🔍 FIRESTORE DIAGNOSTIC');
+    snap.docs.forEach((doc, i) => {
+      const d = doc.data();
+      console.log(`\n--- Doc ${i+1} (id: ${doc.id}) ---`);
+      Object.entries(d).forEach(([k, v]) => console.log(`  "${k}": ${JSON.stringify(v)}`));
+    });
+    console.groupEnd();
+
+    // Show a visible toast with detected language field
+    const sample = snap.docs[0].data();
+    const langField = ['language','Language','lang','Lang'].find(f => sample[f] !== undefined);
+    const catField  = ['category','Category','type','Type'].find(f => sample[f] !== undefined);
+    console.log(`\n✅ Detected: catField="${catField}", langField="${langField}"`);
+    console.log(`   Sample values: category="${sample[catField]}", language="${sample[langField]}"`);
+
+    // Store detected field names globally for use in queries
+    window._catField  = catField  || 'category';
+    window._langField = langField || 'language';
+    window._sampleCatValue  = sample[catField]  || '';
+    window._sampleLangValue = sample[langField] || '';
+
+    showToast(`DB fields: cat="${catField}" lang="${langField}" | sample lang="${sample[langField]}"`);
+  } catch(e) {
+    console.error('Diagnostic failed:', e.message);
+  }
+}
 function initParticles() {
   const wrap = document.getElementById('particles');
   for (let i = 0; i < 25; i++) {
@@ -1439,6 +1471,7 @@ function onUserReady(user) {
   }).catch(() => { updateCoinDisplay(); });
 
   showScreen('screen-mode');
+  runDiagnostic();
 }
 
 function login() {
@@ -1641,7 +1674,7 @@ async function startGame() {
 
   // Show quiz screen with loading state
   showScreen('screen-quiz');
-  document.getElementById('qCatBadge').textContent = state.category;
+  document.getElementById('qCatBadge').textContent = state.category + ' • ' + state.language;
   document.getElementById('freerunStop').style.display = state.mode === 'freerun' ? 'block' : 'none';
   // Timer only shown in Time Bound mode
   document.getElementById('timerWrap').style.display = state.mode === 'timebound' ? 'flex' : 'none';
@@ -1652,102 +1685,70 @@ async function startGame() {
   updateScoreRow();
 
   // ── FIRESTORE FETCH ──────────────────────────────────────────
-  // Tries category+language filter first, falls back to broader searches
+  // DB structure per doc:
+  //   category: "GK"
+  //   question_en: "National sport?"
+  //   question_hi: "राष्ट्रीय खेल?"
+  //   question_mr: "राष्ट्रीय खेळ?"
+  //   options: ["Cricket","Hockey","Football","Kabaddi"]
+  //   answer: 1
+
+  // Map selected language to the correct question field
+  const langFieldMap = {
+    'English':  'question_en',
+    'Hindi':    'question_hi',
+    'Marathi':  'question_mr',
+    'Bengali':  'question_bn',
+    'Tamil':    'question_ta',
+    'Gujarati': 'question_gu',
+  };
+  const qField = langFieldMap[state.language] || 'question_en';
+  console.log(`🌐 Language="${state.language}" → using field "${qField}"`);
+
   try {
-    let questions = [];
+    // Query by category — all languages are in the same doc
+    const snap = await db.collection('questions')
+      .where('category', '==', state.category)
+      .get();
 
-    // Attempt 1: filter by both category AND language
-    try {
-      const snap1 = await db.collection('questions')
-        .where('category', '==', state.category)
-        .where('language', '==', state.language)
-        .get();
-      if (!snap1.empty) {
-        questions = snap1.docs;
-        console.log(`✅ Found ${questions.length} docs (category+language filter)`);
-      }
-    } catch(e) { console.warn('category+language query failed:', e.message); }
+    if (!snap.empty) {
+      console.log(`✅ ${snap.docs.length} docs found for category "${state.category}"`);
+      console.log('📄 Sample doc:', snap.docs[0].data());
 
-    // Attempt 2: category only
-    if (questions.length === 0) {
-      try {
-        const snap2 = await db.collection('questions')
-          .where('category', '==', state.category)
-          .get();
-        if (!snap2.empty) {
-          questions = snap2.docs;
-          console.log(`✅ Found ${questions.length} docs (category only)`);
-        }
-      } catch(e) { console.warn('category-only query failed:', e.message); }
-    }
+      state.questions = snap.docs.map(doc => {
+        const d = doc.data();
+        // Pick question in selected language, fall back to English
+        const qText = d[qField] || d['question_en'] || d.question || '';
 
-    // Attempt 3: fetch ALL, filter manually (handles any field naming)
-    if (questions.length === 0) {
-      console.warn('No results from indexed queries — fetching ALL docs and filtering manually');
-      const allSnap = await db.collection('questions').get();
-      if (!allSnap.empty) {
-        const sample = allSnap.docs[0].data();
-        console.log('📄 Sample doc fields:', JSON.stringify(sample, null, 2));
+        // Pick options in selected language too
+        const optFieldMap = {
+          'English':  'options',
+          'Hindi':    'options_hi',
+          'Marathi':  'options_mr',
+          'Bengali':  'options_bn',
+          'Tamil':    'options_ta',
+          'Gujarati': 'options_gu',
+        };
+        const optField = optFieldMap[state.language] || 'options';
+        const opts = d[optField] || d.options || d.Options || d.choices || [];
 
-        // Detect category field name
-        const catField = ['category','Category','type','Type','subject','Subject']
-          .find(f => sample[f] !== undefined) || 'category';
-        // Detect language field name  
-        const langField = ['language','Language','lang','Lang']
-          .find(f => sample[f] !== undefined) || 'language';
-        console.log(`🔑 catField="${catField}", langField="${langField}"`);
-
-        const catTarget  = state.category.toLowerCase().trim();
-        const langTarget = state.language.toLowerCase().trim();
-
-        // Filter by category + language
-        let filtered = allSnap.docs.filter(doc => {
-          const d = doc.data();
-          const catVal  = String(d[catField]  || '').toLowerCase().trim();
-          const langVal = String(d[langField] || '').toLowerCase().trim();
-          return (catVal === catTarget || catVal.includes(catTarget)) &&
-                 (langVal === langTarget || langVal.includes(langTarget));
-        });
-
-        // If no language match, just filter by category
-        if (filtered.length === 0) {
-          filtered = allSnap.docs.filter(doc => {
-            const catVal = String(doc.data()[catField] || '').toLowerCase().trim();
-            return catVal === catTarget || catVal.includes(catTarget);
-          });
-          console.warn(`No language match — using ${filtered.length} docs with category only`);
-        }
-
-        questions = filtered.length > 0 ? filtered : allSnap.docs;
-        console.log(`✅ After manual filter: ${questions.length} docs`);
-      }
-    }
-
-    if (questions.length > 0) {
-      const sample = questions[0].data ? questions[0].data() : questions[0];
-      console.log('📄 Using sample:', sample);
-
-      state.questions = questions.map(doc => {
-        const d = doc.data ? doc.data() : doc;
-        const qText = d.question   || d.questionen || d.questionEn  ||
-                      d.questionText || d.Question || d.text || d.q || '';
-        const opts  = d.options    || d.Options    || d.choices      ||
-                      d.Choices    || d.answers    || d.Answers      || [];
-        const ans   = (d.answer         !== undefined) ? d.answer
-                    : (d.correctAnswer  !== undefined) ? d.correctAnswer
-                    : (d.correct_answer !== undefined) ? d.correct_answer
-                    : (d.correct        !== undefined) ? d.correct
-                    : (d.Answer         !== undefined) ? d.Answer : 0;
-        return { q: String(qText).trim(), opts: Array.isArray(opts) ? opts : [], ans: Number(ans) };
+        const ans = d.answer !== undefined ? d.answer
+                  : d.correctAnswer !== undefined ? d.correctAnswer : 0;
+        return {
+          q:    String(qText).trim(),
+          opts: Array.isArray(opts) ? opts : [],
+          ans:  Number(ans)
+        };
       }).filter(q => q.q.length > 0 && q.opts.length >= 2);
 
-      console.log(`🎮 ${state.questions.length} valid questions ready`);
+      console.log(`🎮 ${state.questions.length} valid questions ready in "${state.language}"`);
+
       if (state.questions.length === 0) {
-        showToast('Questions found but fields unreadable — check console');
+        showToast('No valid questions found — check console');
         state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
       }
     } else {
-      console.warn('Firestore empty — using demo data');
+      console.warn(`No docs found for category="${state.category}" — using demo data`);
       state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
     }
   } catch(e) {
@@ -1899,7 +1900,7 @@ function checkAnswer(idx, btn) {
     state.wrongCount++;
     state.streak = 0;
     state.wrongAnswers.push({
-      q: state.currentQ.q,
+      q: state.currentQ.q,  // already in selected language
       yourAns: state.currentQ.opts[idx],
       rightAns: state.currentQ.opts[correct]
     });
