@@ -884,7 +884,27 @@ h2 {
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+<div id="dailyPopup" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  z-index:300;
+  align-items:center;
+  justify-content:center;
+">
+  <div style="background:#15152b;padding:22px;border-radius:20px;width:90%;max-width:320px;text-align:center;">
+    
+    <h2>🎯 Daily Quiz</h2>
+    <p style="color:var(--sub);font-size:13px;margin-bottom:16px;">
+      Play today’s quiz & earn bonus coins!
+    </p>
 
+    <button class="btn btn-gold btn-full" onclick="startDailyQuiz()">Start Daily Quiz</button>
+    <button class="btn btn-ghost btn-full" onclick="closeDailyPopup()">Later</button>
+
+  </div>
+</div>
 <!-- MAIN APP -->
 <div id="app">
 
@@ -976,9 +996,6 @@ h2 {
         <div class="lang-btn selected" onclick="selectLang('English', this)">🇬🇧 English</div>
         <div class="lang-btn" onclick="selectLang('Hindi', this)">🇮🇳 हिन्दी</div>
         <div class="lang-btn" onclick="selectLang('Marathi', this)">🔵 मराठी</div>
-        <div class="lang-btn" onclick="selectLang('Bengali', this)">🟡 বাংলা</div>
-        <div class="lang-btn" onclick="selectLang('Tamil', this)">🔴 தமிழ்</div>
-        <div class="lang-btn" onclick="selectLang('Gujarati', this)">🟠 ગુજરાતી</div>
       </div>
 
       <br>
@@ -1046,9 +1063,6 @@ h2 {
         <div class="lang-btn selected" onclick="selectLang('English', this)">🇬🇧 English</div>
         <div class="lang-btn" onclick="selectLang('Hindi', this)">🇮🇳 हिन्दी</div>
         <div class="lang-btn" onclick="selectLang('Marathi', this)">🔵 मराठी</div>
-        <div class="lang-btn" onclick="selectLang('Bengali', this)">🟡 বাংলা</div>
-        <div class="lang-btn" onclick="selectLang('Tamil', this)">🔴 தமிழ்</div>
-        <div class="lang-btn" onclick="selectLang('Gujarati', this)">🟠 ગુજરાતી</div>
       </div>
     </div>
 
@@ -1407,7 +1421,13 @@ function spendCoins(amount) {
 }
 
 updateCoinDisplay();
+let dailyData = {
+  lastDate: localStorage.getItem('qm_daily_date') || null
+};
 
+function getToday() {
+  return new Date().toISOString().split('T')[0];
+}
 // ╔════════════════════════════════════════╗
 //   SCREENS
 // ╚════════════════════════════════════════╝
@@ -1472,8 +1492,36 @@ function onUserReady(user) {
 
   showScreen('screen-mode');
   runDiagnostic();
+  checkDailyPopup();
+}
+function checkDailyPopup() {
+  const today = getToday();
+
+  if (dailyData.lastDate !== today) {
+    setTimeout(() => {
+      openDailyPopup();
+    }, 800);
+  }
+}
+  function openDailyPopup() {
+  document.getElementById('dailyPopup').style.display = 'flex';
 }
 
+function closeDailyPopup() {
+  document.getElementById('dailyPopup').style.display = 'none';
+}
+  function startDailyQuiz() {
+  closeDailyPopup();
+
+  state.category = 'GK';
+  state.mode = 'timebound';
+  state.qCount = 5;
+  state.timePerQ = 10;
+
+  state.isDaily = true; // 🔥 IMPORTANT FLAG
+
+  startGame();
+}
 function login() {
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
@@ -1698,9 +1746,6 @@ async function startGame() {
     'English':  'question_en',
     'Hindi':    'question_hi',
     'Marathi':  'question_mr',
-    'Bengali':  'question_bn',
-    'Tamil':    'question_ta',
-    'Gujarati': 'question_gu',
   };
   const qField = langFieldMap[state.language] || 'question_en';
   console.log(`🌐 Language="${state.language}" → using field "${qField}"`);
@@ -1725,9 +1770,6 @@ async function startGame() {
           'English':  'options',
           'Hindi':    'options_hi',
           'Marathi':  'options_mr',
-          'Bengali':  'options_bn',
-          'Tamil':    'options_ta',
-          'Gujarati': 'options_gu',
         };
         const optField = optFieldMap[state.language] || 'options';
         const opts = d[optField] || d.options || d.Options || d.choices || [];
@@ -1985,7 +2027,18 @@ function endGame() {
   earnCoins(coinsEarned);
 
   document.getElementById('finalScore').textContent = state.score;
+if (state.isDaily) {
+  const today = getToday();
 
+  if (dailyData.lastDate !== today) {
+    earnCoins(30);
+    localStorage.setItem('qm_daily_date', today);
+    dailyData.lastDate = today;
+    showToast('🎯 Daily Quiz Reward: +30 coins');
+  }
+
+  state.isDaily = false;
+}
   const pct = total > 0 ? state.rightCount / total : 0;
   let emoji = '😐', title = 'Keep Practising!', sub = '';
   if (pct >= 0.9) { emoji = '🏆'; title = 'Outstanding!'; sub = 'You are a Quiz Legend!'; }
@@ -2040,6 +2093,8 @@ function goHome() {
   showScreen('screen-mode');
 }
 </script>
-
+<div style="position:fixed;bottom:20px;left:16px;z-index:100;">
+  <button class="btn btn-pink" onclick="openDailyPopup()">🎯 Daily</button>
+</div>
 </body>
 </html>
