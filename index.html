@@ -110,8 +110,9 @@
       <button id="startQuizBtn" class="btn" style="display: none;" onclick="startQuiz()">🚀 START QUIZ</button>
     </div>
 
-    <!-- Daily Quiz Button -->
+    <!-- Daily Quiz Button & Stats -->
     <button class="btn btn-daily" onclick="openDailyQuiz()">📅 DAILY QUIZ</button>
+    <button class="btn" style="background: #7c4dff;" onclick="showStats()">📊 MY STATS</button>
   </div>
 
   <!-- QUIZ SCREEN -->
@@ -149,7 +150,21 @@
     <div>Correct: <span id="finalRight">0</span> | Wrong: <span id="finalWrong">0</span> | Skipped: <span id="finalSkip">0</span></div>
     <div>Coins Earned: +<span id="coinsEarned">0</span></div>
     <div id="wrongList" style="margin-top: 16px; max-height: 200px; overflow-y: auto;"></div>
+    <button class="btn" onclick="shareScore()">📤 Share Score</button>
     <button class="btn" onclick="backToDashboard()">🏠 Home</button>
+  </div>
+
+  <!-- STATS MODAL -->
+  <div id="statsModal" class="modal">
+    <div class="modal-content">
+      <h3>📊 Your Statistics</h3>
+      <div style="margin: 10px 0;">Total Games Played: <span id="totalGames">0</span></div>
+      <div>Total Correct: <span id="totalCorrect">0</span></div>
+      <div>Total Wrong: <span id="totalWrong">0</span></div>
+      <div>Total Coins Earned: <span id="totalCoinsEarned">0</span></div>
+      <div>Best Streak: <span id="bestStreak">0</span></div>
+      <button class="btn" onclick="closeStatsModal()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -158,6 +173,7 @@
     <h3>📅 Daily Quiz</h3>
     <div id="dailyStatus"></div>
     <div id="dailyQuestions" style="max-height: 400px; overflow-y: auto; margin: 12px 0;"></div>
+    <div id="dailyFeedback" style="margin-top: 10px; font-size: 14px;"></div>
     <button class="btn" id="closeDailyBtn" onclick="closeDailyModal()">Close</button>
   </div>
 </div>
@@ -168,7 +184,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script>
-// ---------- FIREBASE ----------
+// -------------------------- FIREBASE --------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyCkSNiFrju355cCtsby_SHCJuTfMkDbNQM",
   authDomain: "quiz-game-app-ba331.firebaseapp.com",
@@ -181,15 +197,16 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ---------- GLOBAL STATE ----------
+// -------------------------- GLOBALS --------------------------
 let currentUser = null;
 let coins = 50;
 let unlockedCategories = [];
 let selectedCategory = null;
 let selectedMode = null;
 let currentLang = "English";
-let currentQuestions = [], currentQuestionObj = null, qIndex = 0, right=0, wrong=0, skipped=0, score=0, streak=0, timerInterval = null, timeLeft = 0;
+let currentQuestions = [], currentQuestionObj = null, qIndex = 0, right=0, wrong=0, skipped=0, score=0, streak=0, bestStreak=0, timerInterval = null, timeLeft = 0;
 let powerupActive = { doubleCoins: false };
+let stats = { totalGames:0, totalCorrect:0, totalWrong:0, totalCoinsEarned:0, bestStreak:0 };
 
 // 10 categories (3 free, 7 locked)
 const allCategories = [
@@ -205,53 +222,74 @@ const allCategories = [
   { name: "Comics", key: "Comics", locked: true, icon: "🦸" }
 ];
 
-// ---------- HELPER FUNCTIONS ----------
+// Helper functions
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.innerText = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2000);
+  if (navigator.vibrate) navigator.vibrate(100);
 }
-
-function updateCoinUI() {
-  document.getElementById('coinsDisplay').innerText = coins;
-}
-
+function updateCoinUI() { document.getElementById('coinsDisplay').innerText = coins; }
 function saveUserData() {
-  if(currentUser) db.collection('users').doc(currentUser.uid).set({ coins, unlockedCategories }, { merge: true });
-  else localStorage.setItem('quizania_guest', JSON.stringify({ coins, unlockedCategories }));
+  if(currentUser) db.collection('users').doc(currentUser.uid).set({ coins, unlockedCategories, stats }, { merge: true });
+  else localStorage.setItem('quizania_guest', JSON.stringify({ coins, unlockedCategories, stats }));
 }
-
 function loadGuestData() {
   const data = localStorage.getItem('quizania_guest');
   if(data) {
     let g = JSON.parse(data);
     coins = g.coins || 50;
     unlockedCategories = g.unlockedCategories || allCategories.filter(c=>!c.locked).map(c=>c.key);
+    stats = g.stats || { totalGames:0, totalCorrect:0, totalWrong:0, totalCoinsEarned:0, bestStreak:0 };
   } else {
     coins = 50;
     unlockedCategories = allCategories.filter(c=>!c.locked).map(c=>c.key);
+    stats = { totalGames:0, totalCorrect:0, totalWrong:0, totalCoinsEarned:0, bestStreak:0 };
   }
   updateCoinUI();
 }
-
 async function loadUserData(uid) {
   const doc = await db.collection('users').doc(uid).get();
   if(doc.exists) {
     coins = doc.data().coins || 50;
     unlockedCategories = doc.data().unlockedCategories || allCategories.filter(c=>!c.locked).map(c=>c.key);
+    stats = doc.data().stats || { totalGames:0, totalCorrect:0, totalWrong:0, totalCoinsEarned:0, bestStreak:0 };
   } else {
     coins = 50;
     unlockedCategories = allCategories.filter(c=>!c.locked).map(c=>c.key);
+    stats = { totalGames:0, totalCorrect:0, totalWrong:0, totalCoinsEarned:0, bestStreak:0 };
   }
   updateCoinUI();
 }
-
-// ---------- AUTH ----------
-function loginWithGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).then(result => onLoginSuccess(result.user)).catch(e => showToast("Login failed"));
+function updateStatsAfterGame(rightCount, wrongCount, coinsEarned, streakMax) {
+  stats.totalGames++;
+  stats.totalCorrect += rightCount;
+  stats.totalWrong += wrongCount;
+  stats.totalCoinsEarned += coinsEarned;
+  if(streakMax > stats.bestStreak) stats.bestStreak = streakMax;
+  saveUserData();
 }
+function showStats() {
+  document.getElementById('totalGames').innerText = stats.totalGames;
+  document.getElementById('totalCorrect').innerText = stats.totalCorrect;
+  document.getElementById('totalWrong').innerText = stats.totalWrong;
+  document.getElementById('totalCoinsEarned').innerText = stats.totalCoinsEarned;
+  document.getElementById('bestStreak').innerText = stats.bestStreak;
+  document.getElementById('statsModal').classList.add('active');
+}
+function closeStatsModal() { document.getElementById('statsModal').classList.remove('active'); }
+function shareScore() {
+  let text = `I scored ${score} points in Quizania! Correct: ${right}, Wrong: ${wrong}, Skipped: ${skipped}. Can you beat me?`;
+  if (navigator.share) navigator.share({ title: 'My Quizania Score', text: text });
+  else {
+    navigator.clipboard.writeText(text);
+    showToast("Score copied to clipboard!");
+  }
+}
+
+// Auth
+function loginWithGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(result => onLoginSuccess(result.user)).catch(e => showToast("Login failed")); }
 function guestLogin() {
   currentUser = null;
   loadGuestData();
@@ -279,15 +317,9 @@ function toggleMenu() {
     localStorage.removeItem('quizania_guest');
   }
 }
-auth.onAuthStateChanged(user => {
-  if(user) onLoginSuccess(user);
-  else {
-    document.getElementById('loginScreen').style.display = 'block';
-    document.getElementById('dashboard').style.display = 'none';
-  }
-});
+auth.onAuthStateChanged(user => { if(user) onLoginSuccess(user); else { document.getElementById('loginScreen').style.display = 'block'; document.getElementById('dashboard').style.display = 'none'; } });
 
-// ---------- CATEGORY RENDERING & UNLOCK ----------
+// Categories
 function renderCategories() {
   const grid = document.getElementById('categoryGrid');
   grid.innerHTML = '';
@@ -297,62 +329,35 @@ function renderCategories() {
     div.className = `cat-card ${!isUnlocked ? 'locked' : ''}`;
     if(selectedCategory === cat.key) div.classList.add('selected');
     div.innerHTML = `<div class="cat-icon">${cat.icon}</div><div class="cat-name">${cat.name}</div>`;
-    if(isUnlocked) {
-      div.onclick = () => { selectCategory(cat.key); };
-    } else {
-      div.onclick = () => unlockCategory(cat);
-    }
+    if(isUnlocked) div.onclick = () => { selectCategory(cat.key); };
+    else div.onclick = () => unlockCategory(cat);
     grid.appendChild(div);
   });
 }
-
-function selectCategory(key) {
-  selectedCategory = key;
-  renderCategories();
-  checkStartEnabled();
-}
-
+function selectCategory(key) { selectedCategory = key; renderCategories(); checkStartEnabled(); }
 function unlockCategory(cat) {
   if(unlockedCategories.includes(cat.key)) return;
   if(coins >= 100) {
     if(confirm(`Unlock ${cat.name} for 100 coins?`)) {
-      coins -= 100;
-      unlockedCategories.push(cat.key);
-      updateCoinUI();
-      saveUserData();
-      renderCategories();
-      showToast(`${cat.name} unlocked!`);
+      coins -= 100; unlockedCategories.push(cat.key); updateCoinUI(); saveUserData(); renderCategories(); showToast(`${cat.name} unlocked!`);
     }
-  } else {
-    showToast(`Not enough coins! Need 100 to unlock ${cat.name}`);
-  }
+  } else showToast(`Not enough coins! Need 100 to unlock ${cat.name}`);
 }
-
-// ---------- LANGUAGE & MODE ----------
-function setLanguage(lang, el) {
-  currentLang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-}
+function setLanguage(lang, el) { currentLang = lang; document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); }
 function setMode(mode, el) {
   selectedMode = mode;
-  document.querySelectorAll('.mode-option').forEach(m => m.classList.remove('selected'));
+  document.querySelectorAll('.mode-option').forEach(m=>m.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById('timeSettings').style.display = mode === 'timebound' ? 'block' : 'none';
   checkStartEnabled();
 }
-function checkStartEnabled() {
-  const btn = document.getElementById('startQuizBtn');
-  if(selectedCategory && selectedMode) btn.style.display = 'block';
-  else btn.style.display = 'none';
-}
+function checkStartEnabled() { document.getElementById('startQuizBtn').style.display = (selectedCategory && selectedMode) ? 'block' : 'none'; }
 
-// ---------- QUIZ ENGINE (with fallback questions) ----------
+// Fetch questions (fallback included)
 async function fetchQuestions(category, lang) {
-  const langMap = { English: 'en', Hindi: 'hi', Marathi: 'mr' };
+  const langMap = { English:'en', Hindi:'hi', Marathi:'mr' };
   const suffix = langMap[lang] || 'en';
-  const qField = `question_${suffix}`;
-  const optField = `options_${suffix}`;
+  const qField = `question_${suffix}`, optField = `options_${suffix}`;
   try {
     const snap = await db.collection('questions').where('category','==',category).get();
     let qs = [];
@@ -364,39 +369,30 @@ async function fetchQuestions(category, lang) {
     });
     if(qs.length) return qs;
   } catch(e) {}
-  // fallback
-  return [
-    { q: `Sample ${category} question in ${lang}?`, opts: ["Option A","B","C","D"], ans: 0 },
-    { q: "Second sample question", opts: ["X","Y","Z","W"], ans: 1 }
-  ];
+  return [{ q: `Sample ${category} question in ${lang}`, opts: ["A","B","C","D"], ans: 0 }];
 }
 
+// Quiz Engine
 async function startQuiz() {
   if(!selectedCategory || !selectedMode) return;
-  right=0; wrong=0; skipped=0; score=0; streak=0; qIndex=0;
-  powerupActive.doubleCoins = false;
+  right=0; wrong=0; skipped=0; score=0; streak=0; qIndex=0; powerupActive.doubleCoins=false;
   const qCount = selectedMode === 'timebound' ? parseInt(document.getElementById('qCountSel').value) : 99999;
   const questionsAll = await fetchQuestions(selectedCategory, currentLang);
-  currentQuestions = questionsAll.sort(() => Math.random() - 0.5).slice(0, qCount);
+  currentQuestions = questionsAll.sort(()=>Math.random()-0.5).slice(0, qCount);
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('quizScreen').style.display = 'block';
   document.getElementById('catName').innerText = selectedCategory;
   updateQuizUI();
   nextQuestion();
 }
-
 function updateQuizUI() {
   document.getElementById('rightCount').innerText = right;
   document.getElementById('wrongCount').innerText = wrong;
   document.getElementById('skipCount').innerText = skipped;
   document.getElementById('scoreCount').innerText = score;
   const streakElem = document.getElementById('streakDisplay');
-  if(streak >= 3) {
-    streakElem.style.display = 'inline-block';
-    streakElem.innerText = `🔥 ${streak}`;
-  } else {
-    streakElem.style.display = 'none';
-  }
+  if(streak >= 3) { streakElem.style.display = 'inline-block'; streakElem.innerText = `🔥 ${streak}`; }
+  else streakElem.style.display = 'none';
   if(selectedMode === 'timebound' && currentQuestions.length) {
     let percent = (qIndex / currentQuestions.length) * 100;
     document.getElementById('progressFill').style.width = percent + '%';
@@ -406,13 +402,9 @@ function updateQuizUI() {
     document.getElementById('qCounter').innerText = `Q${qIndex+1}`;
   }
 }
-
 function nextQuestion() {
   if(timerInterval) clearInterval(timerInterval);
-  if(currentQuestions.length === 0 || qIndex >= currentQuestions.length) {
-    endQuiz();
-    return;
-  }
+  if(currentQuestions.length === 0 || qIndex >= currentQuestions.length) { endQuiz(); return; }
   currentQuestionObj = currentQuestions[qIndex];
   document.getElementById('questionText').innerHTML = currentQuestionObj.q;
   const optsDiv = document.getElementById('optionsContainer');
@@ -431,23 +423,13 @@ function nextQuestion() {
     timerInterval = setInterval(() => {
       if(timeLeft <= 1) {
         clearInterval(timerInterval);
-        skipped++;
-        updateQuizUI();
-        showToast("Time's up! Skipped.");
-        qIndex++;
-        nextQuestion();
-      } else {
-        timeLeft--;
-        document.getElementById('timerDisplay').innerText = `⏱️ ${timeLeft}s`;
-      }
+        skipped++; updateQuizUI(); showToast("Time's up! Skipped."); qIndex++; nextQuestion();
+      } else { timeLeft--; document.getElementById('timerDisplay').innerText = `⏱️ ${timeLeft}s`; }
     }, 1000);
     document.getElementById('timerDisplay').innerText = `⏱️ ${timeLeft}s`;
-  } else {
-    document.getElementById('timerDisplay').style.display = 'none';
-  }
+  } else document.getElementById('timerDisplay').style.display = 'none';
   updateQuizUI();
 }
-
 function checkAnswer(idx, btn) {
   if(timerInterval) clearInterval(timerInterval);
   const correct = currentQuestionObj.ans;
@@ -455,52 +437,32 @@ function checkAnswer(idx, btn) {
   if(idx === correct) {
     btn.classList.add('correct');
     right++;
-    let earn = 5;
-    if(streak >= 3) earn += streak * 2;
-    if(powerupActive.doubleCoins) {
-      earn *= 2;
-      showToast("💰 Double coins active! +" + earn);
-      powerupActive.doubleCoins = false;
-    }
-    coins += earn;
-    score += 10;
-    streak++;
+    let earn = 5 + (streak>=3 ? streak*2 : 0);
+    if(powerupActive.doubleCoins) { earn *= 2; showToast("💰 Double coins! +"+earn); powerupActive.doubleCoins = false; }
+    coins += earn; score += 10; streak++;
+    if(streak > bestStreak) bestStreak = streak;
     updateCoinUI();
     showToast(`+${earn} coins!`);
+    if(navigator.vibrate) navigator.vibrate(50);
   } else {
     btn.classList.add('wrong');
     allBtns[correct].classList.add('correct');
-    // Show correct answer in toast
     const correctText = currentQuestionObj.opts[correct];
     showToast(`❌ Wrong! Correct answer: ${correctText}`);
-    wrong++;
-    streak=0;
+    wrong++; streak=0;
+    if(navigator.vibrate) navigator.vibrate(200);
   }
   updateQuizUI();
   qIndex++;
   setTimeout(() => nextQuestion(), 1200);
 }
-
 function usePowerup(type) {
-  let cost = 0;
-  if(type === 'fifty') cost = 20;
-  else if(type === 'skip') cost = 10;
-  else if(type === 'change') cost = 15;
-  else if(type === 'double') cost = 25;
+  let cost = { fifty:20, skip:10, change:15, double:25 }[type];
   if(coins < cost) { showToast(`Need ${cost} coins`); return; }
-  coins -= cost;
-  updateCoinUI();
-  saveUserData();
-  if(type === 'skip') {
-    if(timerInterval) clearInterval(timerInterval);
-    skipped++;
-    updateQuizUI();
-    qIndex++;
-    nextQuestion();
-  } else if(type === 'change') {
-    if(timerInterval) clearInterval(timerInterval);
-    nextQuestion();
-  } else if(type === 'fifty') {
+  coins -= cost; updateCoinUI(); saveUserData();
+  if(type === 'skip') { if(timerInterval) clearInterval(timerInterval); skipped++; updateQuizUI(); qIndex++; nextQuestion(); }
+  else if(type === 'change') { if(timerInterval) clearInterval(timerInterval); nextQuestion(); }
+  else if(type === 'fifty') {
     let btns = document.querySelectorAll('.option-btn');
     let correctIdx = currentQuestionObj.ans;
     let toRemove = [];
@@ -508,26 +470,19 @@ function usePowerup(type) {
     toRemove.sort(()=>0.5-Math.random());
     for(let i=0; i<2 && i<toRemove.length; i++) btns[toRemove[i]].remove();
     showToast("50:50 activated!");
-  } else if(type === 'double') {
-    powerupActive.doubleCoins = true;
-    showToast("Double coins for next correct answer!");
-  }
+  } else if(type === 'double') { powerupActive.doubleCoins = true; showToast("Double coins for next correct!"); }
 }
-
 function endQuiz() {
   if(timerInterval) clearInterval(timerInterval);
   let earned = right * 5;
-  coins += earned;
-  updateCoinUI();
-  saveUserData();
+  coins += earned; updateCoinUI(); saveUserData();
+  updateStatsAfterGame(right, wrong, earned, streak);
   document.getElementById('finalScore').innerText = score;
   document.getElementById('finalRight').innerText = right;
   document.getElementById('finalWrong').innerText = wrong;
   document.getElementById('finalSkip').innerText = skipped;
   document.getElementById('coinsEarned').innerText = earned;
-  // show wrong answers review
-  // we haven't stored wrong answers, but we can add simple message
-  document.getElementById('wrongList').innerHTML = "<p>Review answers by playing again!</p>";
+  document.getElementById('wrongList').innerHTML = "<p>Review wrong answers after each question.</p>";
   document.getElementById('resultScreen').style.display = 'block';
   document.getElementById('quizScreen').style.display = 'none';
 }
@@ -535,30 +490,28 @@ function backToDashboard() {
   document.getElementById('resultScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   selectedMode = null; selectedCategory = null;
-  renderCategories();
-  checkStartEnabled();
+  renderCategories(); checkStartEnabled();
 }
 
-// ---------- DAILY QUIZ (5 random questions, scrollable, countdown) ----------
+// Daily Quiz with per-question feedback
 async function openDailyQuiz() {
   const modal = document.getElementById('dailyModal');
   const statusDiv = document.getElementById('dailyStatus');
   const questionsDiv = document.getElementById('dailyQuestions');
+  const feedbackDiv = document.getElementById('dailyFeedback');
   const lastDaily = localStorage.getItem('dailyQuizDate');
   const today = new Date().toISOString().slice(0,10);
   if(lastDaily === today) {
     const now = new Date();
-    const midnight = new Date(now);
-    midnight.setHours(24,0,0,0);
+    const midnight = new Date(now); midnight.setHours(24,0,0,0);
     const diff = Math.floor((midnight - now) / 1000);
-    const hours = Math.floor(diff/3600);
-    const mins = Math.floor((diff%3600)/60);
+    const hours = Math.floor(diff/3600), mins = Math.floor((diff%3600)/60);
     statusDiv.innerHTML = `✅ Already played today! Next quiz in ${hours}h ${mins}m.`;
     questionsDiv.innerHTML = '';
+    feedbackDiv.innerHTML = '';
     document.getElementById('closeDailyBtn').style.display = 'block';
   } else {
-    statusDiv.innerHTML = "🎯 5 random questions from all categories. Get 3+ correct to earn 50 coins!";
-    // fetch 5 random questions from any category
+    statusDiv.innerHTML = "🎯 5 random questions. Get 3+ correct for 50 coins!";
     let allQuestions = [];
     try {
       const snap = await db.collection('questions').limit(20).get();
@@ -570,60 +523,56 @@ async function openDailyQuiz() {
         if(qText && opts) allQuestions.push({ q: qText, opts, ans: data.answer });
       });
     } catch(e) {}
-    if(allQuestions.length < 5) {
-      // fallback
-      allQuestions = [
-        { q: "Sample question 1", opts: ["A","B","C","D"], ans: 0 },
-        { q: "Sample question 2", opts: ["A","B","C","D"], ans: 1 },
-        { q: "Sample question 3", opts: ["A","B","C","D"], ans: 2 },
-        { q: "Sample question 4", opts: ["A","B","C","D"], ans: 3 },
-        { q: "Sample question 5", opts: ["A","B","C","D"], ans: 0 }
-      ];
-    }
+    if(allQuestions.length < 5) allQuestions = [{ q:"Sample 1", opts:["A","B","C","D"], ans:0 }, { q:"Sample 2", opts:["A","B","C","D"], ans:1 }, { q:"Sample 3", opts:["A","B","C","D"], ans:2 }, { q:"Sample 4", opts:["A","B","C","D"], ans:3 }, { q:"Sample 5", opts:["A","B","C","D"], ans:0 }];
     let dailyQs = allQuestions.sort(()=>Math.random()-0.5).slice(0,5);
     questionsDiv.innerHTML = '';
-    let answers = [];
+    let selectedAnswers = new Array(5).fill(null);
     dailyQs.forEach((q, i) => {
       let div = document.createElement('div');
       div.style.margin = '12px 0';
       div.style.textAlign = 'left';
       div.innerHTML = `<strong>${i+1}. ${q.q}</strong><br>`;
       q.opts.forEach((opt, idx) => {
-        div.innerHTML += `<label style="display: block; margin: 4px 0;"><input type="radio" name="dailyQ${i}" value="${idx}"> ${opt}</label>`;
+        div.innerHTML += `<label style="display: block; margin: 4px 0;"><input type="radio" name="dailyQ${i}" value="${idx}" data-qidx="${i}" data-optidx="${idx}"> ${opt}</label>`;
       });
       questionsDiv.appendChild(div);
-      answers.push(q.ans);
+      // store answer mapping
+      dailyQs[i].userChoice = null;
     });
     const submitBtn = document.createElement('button');
     submitBtn.className = 'btn';
     submitBtn.innerText = 'Submit Daily Quiz';
     submitBtn.onclick = () => {
       let correctCount = 0;
+      let feedbackHtml = '';
       for(let i=0; i<dailyQs.length; i++) {
         let selected = document.querySelector(`input[name="dailyQ${i}"]:checked`);
-        if(selected && parseInt(selected.value) === answers[i]) correctCount++;
+        let userAns = selected ? parseInt(selected.value) : null;
+        let isCorrect = (userAns === dailyQs[i].ans);
+        if(isCorrect) correctCount++;
+        let correctAnsText = dailyQs[i].opts[dailyQs[i].ans];
+        let userAnsText = userAns !== null ? dailyQs[i].opts[userAns] : "Not answered";
+        feedbackHtml += `<div style="margin: 8px 0; padding: 8px; border-radius: 12px; background: ${isCorrect ? 'rgba(0,255,136,0.1)' : 'rgba(255,68,68,0.1)'};">`;
+        feedbackHtml += `<strong>Q${i+1}: ${dailyQs[i].q}</strong><br>`;
+        feedbackHtml += `Your answer: ${userAnsText}<br>`;
+        feedbackHtml += `✅ Correct: ${correctAnsText}<br>`;
+        feedbackHtml += `</div>`;
       }
+      feedbackDiv.innerHTML = feedbackHtml;
       if(correctCount >= 3) {
-        coins += 50;
-        updateCoinUI();
-        saveUserData();
-        localStorage.setItem('dailyQuizDate', today);
-        showToast("🎉 Great! You earned 50 coins!");
+        coins += 50; updateCoinUI(); saveUserData(); localStorage.setItem('dailyQuizDate', today);
+        showToast(`🎉 Great! You earned 50 coins!`);
       } else {
-        showToast(`You got ${correctCount}/5. Need 3+ to earn coins.`);
+        showToast(`You got ${correctCount}/5 correct. Need 3+ to earn coins.`);
       }
-      closeDailyModal();
     };
     questionsDiv.appendChild(submitBtn);
     document.getElementById('closeDailyBtn').style.display = 'block';
   }
   modal.classList.add('active');
 }
-function closeDailyModal() {
-  document.getElementById('dailyModal').classList.remove('active');
-}
+function closeDailyModal() { document.getElementById('dailyModal').classList.remove('active'); document.getElementById('dailyFeedback').innerHTML = ''; }
 
-// initial render
 renderCategories();
 </script>
 </body>
