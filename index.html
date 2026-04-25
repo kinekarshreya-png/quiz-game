@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz Master</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Quiz Master - Daily Quiz & Unlockable Categories</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -18,1288 +19,220 @@
   --text: #e8eaf6;
   --sub: #9fa8da;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   font-family: 'Nunito', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
-  position: relative;
 }
-
-/* === ANIMATED BACKGROUND === */
-.bg-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-}
-
+.bg-layer { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
 .bg-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
   background-size: 40px 40px;
   animation: gridShift 20s linear infinite;
 }
-
-@keyframes gridShift {
-  from { transform: translateY(0); }
-  to   { transform: translateY(40px); }
-}
-
+@keyframes gridShift { from { transform: translateY(0); } to { transform: translateY(40px); } }
 .orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.18;
+  position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18;
   animation: orbFloat 8s ease-in-out infinite;
 }
-
-.orb1 { width: 500px; height: 500px; background: var(--cyan); top: -150px; left: -100px; animation-delay: 0s; }
+.orb1 { width: 500px; height: 500px; background: var(--cyan); top: -150px; left: -100px; }
 .orb2 { width: 400px; height: 400px; background: var(--pink); bottom: -100px; right: -80px; animation-delay: 3s; }
 .orb3 { width: 300px; height: 300px; background: var(--purple); top: 40%; left: 50%; animation-delay: 5s; }
+@keyframes orbFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-30px) scale(1.05); } }
 
-@keyframes orbFloat {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50%       { transform: translateY(-30px) scale(1.05); }
-}
-
-/* === PARTICLES === */
-.particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-.particle {
-  position: absolute;
-  width: 2px; height: 2px;
-  background: var(--cyan);
-  border-radius: 50%;
-  animation: particleFly linear infinite;
-  opacity: 0;
-}
-@keyframes particleFly {
-  0%   { opacity: 0; transform: translateY(100vh) rotate(0deg); }
-  10%  { opacity: 0.6; }
-  90%  { opacity: 0.4; }
-  100% { opacity: 0; transform: translateY(-20px) rotate(720deg); }
-}
-
-/* === APP WRAPPER === */
-#app {
-  position: relative;
-  z-index: 1;
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 20px 16px 40px;
-  min-height: 100vh;
-}
-
-/* === HEADER === */
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0 20px;
-}
-
+#app { position: relative; z-index: 1; max-width: 500px; margin: 0 auto; padding: 20px 16px 40px; min-height: 100vh; }
+.top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px; }
 .logo {
-  font-family: 'Orbitron', monospace;
-  font-size: 22px;
-  font-weight: 900;
-  background: linear-gradient(90deg, var(--cyan), var(--pink));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 2px;
+  font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 900;
+  background: linear-gradient(90deg, var(--cyan), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-
-.coin-display {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,215,0,0.12);
-  border: 1px solid rgba(255,215,0,0.3);
-  border-radius: 30px;
-  padding: 6px 14px;
-  font-weight: 800;
-  color: var(--gold);
-  font-size: 15px;
-}
-
-.coin-icon { font-size: 18px; }
-
-/* === CARDS === */
+.coin-display { display: flex; align-items: center; gap: 6px; background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.3); border-radius: 30px; padding: 6px 14px; font-weight: 800; color: var(--gold); }
 .screen { display: none; animation: fadeUp 0.4s ease; }
 .screen.active { display: block; }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 28px 24px;
-  margin-bottom: 16px;
-  backdrop-filter: blur(12px);
-  position: relative;
-  overflow: hidden;
+  background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 28px 24px; margin-bottom: 16px;
+  backdrop-filter: blur(12px); position: relative; overflow: hidden;
 }
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-}
-
-.section-title {
-  font-family: 'Orbitron', monospace;
-  font-size: 13px;
-  letter-spacing: 3px;
-  color: var(--sub);
-  text-transform: uppercase;
-  margin-bottom: 18px;
-}
-
-h2 {
-  font-size: 22px;
-  font-weight: 800;
-  margin-bottom: 6px;
-}
-
-/* === BUTTONS === */
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+.section-title { font-family: 'Orbitron', monospace; font-size: 13px; letter-spacing: 3px; color: var(--sub); text-transform: uppercase; margin-bottom: 18px; }
+h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 13px 22px;
-  border: none;
-  border-radius: 14px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.25s;
-  text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border: none; border-radius: 14px;
+  font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s;
 }
-
-.btn-cyan {
-  background: linear-gradient(135deg, var(--cyan), #0097a7);
-  color: #000;
-}
-
-.btn-pink {
-  background: linear-gradient(135deg, var(--pink), #c2185b);
-  color: #fff;
-}
-
-.btn-gold {
-  background: linear-gradient(135deg, var(--gold), #f57f17);
-  color: #000;
-}
-
-.btn-ghost {
-  background: transparent;
-  border: 1.5px solid var(--border);
-  color: var(--text);
-}
-
+.btn-cyan { background: linear-gradient(135deg, var(--cyan), #0097a7); color: #000; }
+.btn-pink { background: linear-gradient(135deg, var(--pink), #c2185b); color: #fff; }
+.btn-gold { background: linear-gradient(135deg, var(--gold), #f57f17); color: #000; }
+.btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
 .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-.btn:active { transform: scale(0.97); }
-
 .btn-full { width: 100%; margin-bottom: 10px; }
 
-/* === LOGIN SCREEN === */
-.login-hero {
-  text-align: center;
-  padding: 30px 0 10px;
-}
-
-.login-hero .trophy { font-size: 70px; animation: bounce 2s ease-in-out infinite; }
-@keyframes bounce {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-12px); }
-}
-
-.login-hero h1 {
-  font-family: 'Orbitron', monospace;
-  font-size: 30px;
-  font-weight: 900;
-  background: linear-gradient(90deg, var(--cyan), var(--pink), var(--gold));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 12px 0 6px;
-}
-
-.login-hero p { color: var(--sub); font-size: 14px; }
-
-.features-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 20px 0;
-}
-
-.feature-item {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  text-align: center;
-}
-
-.feature-item .icon { font-size: 26px; }
-.feature-item p { font-size: 12px; color: var(--sub); margin-top: 4px; }
-
-/* === LANGUAGE SELECTOR === */
-.lang-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
+.lang-grid { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .lang-btn {
-  background: rgba(255,255,255,0.05);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.25s;
-  font-family: 'Nunito', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
+  background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 40px; padding: 8px 16px;
+  cursor: pointer; font-weight: 700; font-size: 14px; transition: all 0.2s;
 }
+.lang-btn:hover, .lang-btn.selected { border-color: var(--cyan); background: rgba(0,229,255,0.1); color: var(--cyan); }
 
-.lang-btn:hover, .lang-btn.selected {
-  border-color: var(--cyan);
-  background: rgba(0,229,255,0.1);
-  color: var(--cyan);
-}
-
-/* === CATEGORY GRID === */
-.cat-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
+.cat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
 .cat-card {
-  background: rgba(255,255,255,0.04);
-  border: 1.5px solid var(--border);
-  border-radius: 18px;
-  padding: 20px 12px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
+  background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 18px; padding: 16px 8px; text-align: center;
+  cursor: pointer; transition: all 0.3s; position: relative;
 }
+.cat-card.locked { opacity: 0.7; filter: grayscale(0.2); }
+.cat-card.locked::after { content: "🔒"; position: absolute; top: 10px; right: 12px; font-size: 16px; }
+.cat-icon { font-size: 32px; margin-bottom: 6px; }
+.cat-name { font-weight: 800; font-size: 14px; }
 
-.cat-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 18px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.cat-card:hover { transform: translateY(-4px); }
-.cat-card:hover::after { opacity: 1; }
-
-.cat-card.gk::after       { background: radial-gradient(circle at 50% 120%, rgba(0,229,255,0.15), transparent 60%); }
-.cat-card.sports::after   { background: radial-gradient(circle at 50% 120%, rgba(0,255,136,0.15), transparent 60%); }
-.cat-card.bollywood::after{ background: radial-gradient(circle at 50% 120%, rgba(255,77,166,0.15), transparent 60%); }
-.cat-card.science::after  { background: radial-gradient(circle at 50% 120%, rgba(180,75,255,0.15), transparent 60%); }
-.cat-card.songs::after    { background: radial-gradient(circle at 50% 120%, rgba(255,215,0,0.15), transparent 60%); }
-.cat-card.history::after  { background: radial-gradient(circle at 50% 120%, rgba(255,100,50,0.15), transparent 60%); }
-
-.cat-icon { font-size: 36px; margin-bottom: 8px; }
-.cat-name { font-weight: 800; font-size: 15px; }
-.cat-count { font-size: 12px; color: var(--sub); margin-top: 2px; }
-
-/* === MODE SELECTOR === */
-.mode-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 .mode-card {
-  border-radius: 18px;
-  padding: 22px 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
+  border-radius: 18px; padding: 18px 12px; text-align: center; cursor: pointer; transition: all 0.3s;
   border: 2px solid transparent;
 }
-
-.mode-card.freerun {
-  background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(0,229,255,0.04));
-  border-color: rgba(0,229,255,0.3);
-}
-
-.mode-card.timebound {
-  background: linear-gradient(135deg, rgba(255,77,166,0.12), rgba(255,77,166,0.04));
-  border-color: rgba(255,77,166,0.3);
-}
-
-.mode-card:hover { transform: scale(1.03); }
+.mode-card.freerun { background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(0,229,255,0.04)); border-color: rgba(0,229,255,0.3); }
+.mode-card.timebound { background: linear-gradient(135deg, rgba(255,77,166,0.12), rgba(255,77,166,0.04)); border-color: rgba(255,77,166,0.3); }
 .mode-card.selected { border-width: 2px; }
-.mode-card.freerun.selected   { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0,229,255,0.2); }
+.mode-card.freerun.selected { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0,229,255,0.2); }
 .mode-card.timebound.selected { border-color: var(--pink); box-shadow: 0 0 20px rgba(255,77,166,0.2); }
+.mode-icon { font-size: 32px; margin-bottom: 6px; }
+.mode-name { font-weight: 800; font-size: 15px; }
+.mode-desc { font-size: 10px; color: var(--sub); margin-top: 4px; }
 
-.mode-icon { font-size: 38px; margin-bottom: 8px; }
-.mode-name { font-weight: 800; font-size: 16px; }
-.mode-desc { font-size: 11px; color: var(--sub); margin-top: 4px; line-height: 1.4; }
-
-/* === QUIZ SETTINGS === */
-.settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.settings-label { font-weight: 700; font-size: 14px; }
-
-.pill-group {
-  display: flex;
-  gap: 6px;
-}
-
-.pill {
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1.5px solid var(--border);
-  background: transparent;
-  color: var(--sub);
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.pill.active {
-  border-color: var(--cyan);
-  background: rgba(0,229,255,0.1);
-  color: var(--cyan);
-}
-
-/* === QUIZ SCREEN === */
-.quiz-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.progress-bar-wrap {
-  width: 100%;
-  height: 6px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 3px;
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--cyan), var(--pink));
-  border-radius: 3px;
-  transition: width 0.4s ease;
-}
-
-.q-num {
-  font-size: 13px;
-  color: var(--sub);
-  font-weight: 700;
-}
-
-.q-cat-badge {
-  font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  background: rgba(0,229,255,0.1);
-  border: 1px solid rgba(0,229,255,0.3);
-  color: var(--cyan);
-  font-weight: 700;
-}
-
-.question-text {
-  font-size: 19px;
-  font-weight: 800;
-  line-height: 1.5;
-  margin-bottom: 20px;
-  min-height: 60px;
-}
-
-.options-list { display: flex; flex-direction: column; gap: 10px; }
-
+.quiz-header { display: flex; justify-content: space-between; margin-bottom: 16px; }
+.progress-bar-wrap { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--pink)); transition: width 0.4s; }
+.score-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.stat-chip { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 8px; text-align: center; }
+.stat-chip .val { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700; }
+.stat-chip .lbl { font-size: 9px; color: var(--sub); }
 .option-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 15px 18px;
-  background: rgba(255,255,255,0.05);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.25s;
-  font-family: 'Nunito', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  text-align: left;
+  display: flex; gap: 12px; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 14px;
+  cursor: pointer; width: 100%; margin-bottom: 8px; font-weight: 700;
 }
-
-.option-btn:hover {
-  border-color: var(--cyan);
-  background: rgba(0,229,255,0.08);
-  transform: translateX(4px);
-}
-
-.option-btn.correct {
-  border-color: var(--green);
-  background: rgba(0,255,136,0.12);
-  color: var(--green);
-  animation: pulse-green 0.3s;
-}
-
-.option-btn.wrong {
-  border-color: var(--red);
-  background: rgba(255,68,68,0.12);
-  color: var(--red);
-  animation: shake 0.3s;
-}
-
-.option-btn.reveal {
-  border-color: var(--green);
-  background: rgba(0,255,136,0.08);
-}
-
-.option-btn.faded {
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-@keyframes pulse-green {
-  0%,100% { box-shadow: none; }
-  50% { box-shadow: 0 0 20px rgba(0,255,136,0.4); }
-}
-
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
-}
-
-.option-letter {
-  width: 28px; height: 28px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.1);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-
-/* TIMER RING */
-.timer-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 18px;
-}
-
-.timer-ring { position: relative; width: 70px; height: 70px; }
-
-.timer-ring svg { transform: rotate(-90deg); }
-
-.timer-ring circle {
-  fill: none;
-  stroke-width: 5;
-  stroke-linecap: round;
-}
-
-.timer-track { stroke: rgba(255,255,255,0.1); }
-
-.timer-prog {
-  stroke: var(--cyan);
-  stroke-dasharray: 188.5;
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 1s linear, stroke 0.5s;
-}
-
-.timer-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Orbitron', monospace;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-/* === POWERUPS === */
-.powerups {
-  display: flex;
-  justify-content: space-around;
-  margin: 14px 0;
-}
-
+.option-btn.correct { border-color: var(--green); background: rgba(0,255,136,0.12); color: var(--green); }
+.option-btn.wrong { border-color: var(--red); background: rgba(255,68,68,0.12); color: var(--red); }
+.powerups { display: flex; justify-content: space-around; gap: 8px; margin: 14px 0; }
 .powerup-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 10px 14px;
-  cursor: pointer;
-  transition: all 0.25s;
-  font-family: 'Nunito', sans-serif;
-  color: var(--text);
-  min-width: 64px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 14px; padding: 8px 12px;
+  text-align: center; cursor: pointer; font-size: 12px; font-weight: 700; flex: 1;
 }
-
-.powerup-btn:hover:not(:disabled) { border-color: var(--gold); background: rgba(255,215,0,0.08); }
 .powerup-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.powerup-icon { font-size: 22px; }
-.powerup-cost {
-  font-size: 10px;
-  color: var(--gold);
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.powerup-label { font-size: 10px; color: var(--sub); }
-
-/* SCORE INFO ROW */
-.score-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.stat-chip {
-  flex: 1;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 8px;
-  text-align: center;
-}
-
-.stat-chip .val {
-  font-family: 'Orbitron', monospace;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.stat-chip .lbl { font-size: 10px; color: var(--sub); margin-top: 2px; }
-
-/* === COIN ANIMATION === */
-.coin-pop {
-  position: fixed;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--gold);
-  pointer-events: none;
-  z-index: 100;
-  animation: coinPop 1s ease forwards;
-}
-
-@keyframes coinPop {
-  0%   { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
-}
-
-/* === RESULTS SCREEN === */
-.result-hero {
-  text-align: center;
-  padding: 20px 0;
-}
-
-.result-score-ring {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  margin: 0 auto 16px;
-}
-
-.result-score-ring svg { transform: rotate(-90deg); }
-
-.result-score-ring circle {
-  fill: none;
-  stroke-width: 8;
-  stroke-linecap: round;
-}
-
-.ring-track { stroke: rgba(255,255,255,0.08); }
-.ring-fill  { stroke: var(--cyan); stroke-dasharray: 377; transition: stroke-dashoffset 1.2s ease; }
-
-.result-score-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.result-score-num .big {
-  font-family: 'Orbitron', monospace;
-  font-size: 32px;
-  font-weight: 900;
-  color: var(--cyan);
-}
-
-.result-score-num .small { font-size: 11px; color: var(--sub); }
-
-.result-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 20px 0;
-}
-
-.result-stat {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-  text-align: center;
-}
-
-.result-stat .val {
-  font-family: 'Orbitron', monospace;
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.result-stat .lbl { font-size: 12px; color: var(--sub); margin-top: 4px; }
-.green-val { color: var(--green); }
-.red-val   { color: var(--red); }
-.gold-val  { color: var(--gold); }
-.sub-val   { color: var(--sub); }
-
-/* === WRONG ANSWERS LIST === */
-.wrong-list { display: flex; flex-direction: column; gap: 10px; }
-
-.wrong-item {
-  background: rgba(255,68,68,0.06);
-  border: 1px solid rgba(255,68,68,0.2);
-  border-radius: 14px;
-  padding: 14px;
-  cursor: pointer;
-  transition: all 0.25s;
-}
-
-.wrong-item:hover { border-color: rgba(255,68,68,0.5); }
-
-.wrong-item .q-text { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
-.wrong-item .your-ans { font-size: 12px; color: var(--red); }
-.wrong-item .right-ans { font-size: 12px; color: var(--green); margin-top: 4px; }
-
-/* === FREERUN SPECIFIC === */
-.streak-badge {
-  background: linear-gradient(135deg, var(--gold), #f57f17);
-  color: #000;
-  font-weight: 900;
-  font-size: 13px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* === NOTIFICATION TOAST === */
 .toast {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-80px);
-  background: rgba(0,0,0,0.85);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px 24px;
-  font-weight: 700;
-  font-size: 14px;
-  z-index: 200;
-  backdrop-filter: blur(12px);
-  transition: transform 0.4s ease;
-  white-space: nowrap;
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+  background: rgba(0,0,0,0.85); border: 1px solid var(--border); border-radius: 14px; padding: 10px 20px;
+  z-index: 200; transition: transform 0.3s; white-space: nowrap;
 }
-
 .toast.show { transform: translateX(-50%) translateY(0); }
-
-/* === SPLASH SPINNER === */
-.splash-spinner {
-  width: 18px; height: 18px;
-  border: 2px solid rgba(255,255,255,0.15);
-  border-top-color: var(--cyan);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* === USER AVATAR === */
-.user-avatar {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  border: 2px solid var(--cyan);
-  object-fit: cover;
-  cursor: pointer;
-  display: block;
-}
-.user-avatar-placeholder {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  border: 2px solid var(--cyan);
-  background: linear-gradient(135deg, var(--cyan), var(--purple));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 800;
-  cursor: pointer; color: #000;
-}
-
-/* === USER MENU === */
+.user-avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--cyan); object-fit: cover; cursor: pointer; }
 .user-menu {
-  position: fixed;
-  top: 64px; right: 16px;
-  background: #15152b;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 8px;
-  z-index: 50;
-  min-width: 210px;
-  display: none;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-  backdrop-filter: blur(12px);
+  position: fixed; top: 64px; right: 16px; background: #15152b; border: 1px solid var(--border);
+  border-radius: 16px; padding: 8px; z-index: 50; min-width: 180px; display: none;
 }
-.user-menu.open { display: block; animation: fadeUp 0.2s ease; }
-.user-menu-name  { padding: 10px 12px 2px; font-weight: 800; font-size: 14px; }
-.user-menu-email { padding: 0 12px 10px; font-size: 11px; color: var(--sub); border-bottom: 1px solid var(--border); margin-bottom: 6px; word-break: break-all; }
-.user-menu-item  { padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 700; transition: background 0.2s; display: flex; align-items: center; gap: 8px; }
-.user-menu-item:hover { background: rgba(255,255,255,0.07); }
-.user-menu-item.danger { color: var(--red); }
-
-/* === SCROLLBAR === */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-
-/* === AD PLACEHOLDER === */
-.ad-banner {
-  background: rgba(255,255,255,0.03);
-  border: 1px dashed rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 12px;
-  text-align: center;
-  color: var(--sub);
-  font-size: 12px;
-  margin: 10px 0;
+.user-menu.open { display: block; }
+.user-menu-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+.user-menu-item:hover { background: rgba(255,255,255,0.1); }
+.ad-placeholder {
+  background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); border-radius: 12px;
+  padding: 10px; text-align: center; font-size: 12px; margin: 12px 0; cursor: pointer;
 }
-
-/* === LEVEL / XP === */
-.xp-bar-wrap {
-  width: 100%;
-  height: 4px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 2px;
-  margin-top: 6px;
-  overflow: hidden;
-}
-
-.xp-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--purple), var(--pink));
-  border-radius: 2px;
-  transition: width 0.6s ease;
-}
-
-/* === BACK BTN === */
-.back-btn {
-  background: transparent;
-  border: none;
-  color: var(--sub);
-  cursor: pointer;
-  font-family: 'Nunito', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 6px 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-  transition: color 0.2s;
-}
-.back-btn:hover { color: var(--text); }
-
-/* === HIGHSCORE BOARD === */
-.highscore-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.highscore-row:last-child { border-bottom: none; }
-.highscore-rank { font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 700; width: 30px; }
-.rank-1 { color: var(--gold); }
-.rank-2 { color: #c0c0c0; }
-.rank-3 { color: #cd7f32; }
-
 </style>
 </head>
-
 <body>
-
-<!-- BACKGROUND -->
-<div class="bg-layer">
-  <div class="bg-grid"></div>
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
-  <div class="orb orb3"></div>
-</div>
-<div class="particles" id="particles"></div>
-
-<!-- TOAST -->
+<div class="bg-layer"><div class="bg-grid"></div><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
 <div class="toast" id="toast"></div>
-<div id="dailyPopup" style="
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  display:none;
-  z-index:300;
-  align-items:center;
-  justify-content:center;
-">
-  <div style="background:#15152b;padding:22px;border-radius:20px;width:90%;max-width:320px;text-align:center;">
-    
-    <h2>🎯 Daily Quiz</h2>
-    <p style="color:var(--sub);font-size:13px;margin-bottom:16px;">
-      Play today’s quiz & earn bonus coins!
-    </p>
-
-    <button class="btn btn-gold btn-full" onclick="startDailyQuiz()">Start Daily Quiz</button>
-    <button class="btn btn-ghost btn-full" onclick="closeDailyPopup()">Later</button>
-
-  </div>
-</div>
-<!-- MAIN APP -->
 <div id="app">
-
-  <!-- USER MENU DROPDOWN -->
-  <div class="user-menu" id="userMenu">
-    <div class="user-menu-name" id="userMenuName">—</div>
-    <div class="user-menu-email" id="userMenuEmail">—</div>
-    <div class="user-menu-item" onclick="goHome()">🏠 Home</div>
-    <div class="user-menu-item danger" onclick="logout()">🚪 Sign Out</div>
-  </div>
-
-  <!-- TOP BAR -->
+  <div class="user-menu" id="userMenu"><div class="user-menu-item" onclick="logout()">🚪 Sign Out</div></div>
   <div class="top-bar">
     <div class="logo">⚡ QUIZ MASTER</div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="coin-display" id="coinDisplay">
-        <span class="coin-icon">🪙</span>
-        <span id="coinCount">0</span>
-      </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div class="coin-display">🪙 <span id="coinCount">0</span></div>
       <div id="userAvatarWrap" style="display:none;" onclick="toggleUserMenu()"></div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SPLASH / LOADING SCREEN
-  ══════════════════════════════════════════ -->
-  <div class="screen active" id="screen-splash">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:20px;">
-      <div style="font-size:70px;animation:bounce 1.5s ease-in-out infinite;">⚡</div>
-      <div class="logo" style="font-size:28px;">QUIZ MASTER</div>
-      <div style="display:flex;align-items:center;gap:10px;color:var(--sub);font-size:14px;">
-        <div class="splash-spinner"></div>
-        <span id="splashMsg">Checking login...</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════
-       SCREEN 1: LOGIN
-  ══════════════════════════════════════════ -->
+  <!-- LOGIN SCREEN -->
   <div class="screen" id="screen-login">
-    <div class="login-hero">
-      <div class="trophy">🏆</div>
-      <h1>QUIZ MASTER</h1>
-      <p>Test your knowledge. Earn coins. Be the champion.</p>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-item">
-        <div class="icon">♾️</div>
-        <p>Free Run Mode</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">⏱️</div>
-        <p>Time Bound Mode</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🪙</div>
-        <p>Earn Coins & Power-ups</p>
-      </div>
-      <div class="feature-item">
-        <div class="icon">🌐</div>
-        <p>Multiple Languages</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <p class="section-title">Get Started</p>
-      <button class="btn btn-cyan btn-full" onclick="login()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"/></svg>
-        Sign in with Google
-      </button>
-      <button class="btn btn-ghost btn-full" onclick="guestLogin()">
-        👤 Continue as Guest
-      </button>
-    </div>
+    <div style="text-align:center; margin:40px 0 20px;"><div style="font-size:70px;">🏆</div><h1>QUIZ MASTER</h1><p style="color:var(--sub);">Daily Quiz · Unlock Categories · Earn Coins</p></div>
+    <div class="card"><button class="btn btn-cyan btn-full" onclick="login()">🔐 Sign in with Google</button><button class="btn btn-ghost btn-full" onclick="guestLogin()">👤 Guest Mode</button></div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 2: LANGUAGE
-  ══════════════════════════════════════════ -->
+  <!-- LANGUAGE (ONLY 3) -->
   <div class="screen" id="screen-language">
-    <div class="card">
-      <p class="section-title">Step 1 of 3</p>
-      <h2>🌐 Choose Language</h2>
-      <p style="color:var(--sub);font-size:13px;margin-bottom:18px;">Questions will be shown in your selected language</p>
-
+    <div class="card"><p class="section-title">Step 1</p><h2>🌐 Choose Language</h2>
       <div class="lang-grid">
-        <div class="lang-btn selected" onclick="selectLang('English', this)">🇬🇧 English</div>
-        <div class="lang-btn" onclick="selectLang('Hindi', this)">🇮🇳 हिन्दी</div>
-        <div class="lang-btn" onclick="selectLang('Marathi', this)">🔵 मराठी</div>
+        <div class="lang-btn selected" onclick="selectLang('English',this)">🇬🇧 English</div>
+        <div class="lang-btn" onclick="selectLang('Hindi',this)">🇮🇳 हिन्दी</div>
+        <div class="lang-btn" onclick="selectLang('Marathi',this)">🇮🇳 मराठी</div>
       </div>
-
-      <br>
-      <button class="btn btn-cyan btn-full" onclick="goToCategory()">Next → Choose Category</button>
+      <button class="btn btn-cyan btn-full" style="margin-top:20px;" onclick="goToCategory()">Next →</button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 3: CATEGORY
-  ══════════════════════════════════════════ -->
+  <!-- CATEGORY with 10 items (3 unlocked, 7 locked) -->
   <div class="screen" id="screen-category">
-    <div class="card">
-      <p class="section-title">Step 2 of 3</p>
-      <h2>📚 Choose Category</h2>
-      <p style="color:var(--sub);font-size:13px;margin-bottom:18px;">Pick your favourite topic</p>
-
-      <div class="cat-grid">
-        <div class="cat-card gk" onclick="selectCat('GK', this)">
-          <div class="cat-icon">🌍</div>
-          <div class="cat-name">General Knowledge</div>
-          <div class="cat-count">500+ questions</div>
-        </div>
-        <div class="cat-card sports" onclick="selectCat('Sports', this)">
-          <div class="cat-icon">🏏</div>
-          <div class="cat-name">Sports</div>
-          <div class="cat-count">300+ questions</div>
-        </div>
-        <div class="cat-card bollywood" onclick="selectCat('Bollywood', this)">
-          <div class="cat-icon">🎬</div>
-          <div class="cat-name">Bollywood</div>
-          <div class="cat-count">400+ questions</div>
-        </div>
-        <div class="cat-card science" onclick="selectCat('Science', this)">
-          <div class="cat-icon">🔬</div>
-          <div class="cat-name">Science</div>
-          <div class="cat-count">350+ questions</div>
-        </div>
-        <div class="cat-card songs" onclick="selectCat('Songs', this)">
-          <div class="cat-icon">🎵</div>
-          <div class="cat-name">Songs</div>
-          <div class="cat-count">250+ questions</div>
-        </div>
-        <div class="cat-card history" onclick="selectCat('History', this)">
-          <div class="cat-icon">📜</div>
-          <div class="cat-name">History</div>
-          <div class="cat-count">280+ questions</div>
-        </div>
-      </div>
-
-      <br>
-      <button class="btn btn-cyan btn-full" id="catNextBtn" onclick="goToMode()" style="display:none">Next → Choose Mode</button>
-      <button class="btn btn-ghost btn-full" onclick="showScreen('screen-language')">← Back</button>
+    <div class="card"><p class="section-title">Step 2</p><h2>📚 Choose Category</h2>
+      <div class="cat-grid" id="categoryGrid"></div>
+      <button class="btn btn-cyan btn-full" id="catNextBtn" style="display:none;" onclick="goToMode()">Next →</button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 4: MODE (includes lang + category)
-  ══════════════════════════════════════════ -->
+  <!-- MODE + QUIZ SETUP -->
   <div class="screen" id="screen-mode">
-
-    <!-- Language row -->
-    <div class="card" style="padding:18px 20px;">
-      <p class="section-title">🌐 Language</p>
-      <div class="lang-grid">
-        <div class="lang-btn selected" onclick="selectLang('English', this)">🇬🇧 English</div>
-        <div class="lang-btn" onclick="selectLang('Hindi', this)">🇮🇳 हिन्दी</div>
-        <div class="lang-btn" onclick="selectLang('Marathi', this)">🔵 मराठी</div>
-      </div>
-    </div>
-
-    <!-- Category row -->
-    <div class="card" style="padding:18px 20px;">
-      <p class="section-title">📚 Category</p>
-      <div class="cat-grid">
-        <div class="cat-card gk" onclick="selectCat('GK', this)">
-          <div class="cat-icon">🌍</div>
-          <div class="cat-name">GK</div>
-        </div>
-        <div class="cat-card sports" onclick="selectCat('Sports', this)">
-          <div class="cat-icon">🏏</div>
-          <div class="cat-name">Sports</div>
-        </div>
-        <div class="cat-card bollywood" onclick="selectCat('Bollywood', this)">
-          <div class="cat-icon">🎬</div>
-          <div class="cat-name">Bollywood</div>
-        </div>
-        <div class="cat-card science" onclick="selectCat('Science', this)">
-          <div class="cat-icon">🔬</div>
-          <div class="cat-name">Science</div>
-        </div>
-        <div class="cat-card songs" onclick="selectCat('Songs', this)">
-          <div class="cat-icon">🎵</div>
-          <div class="cat-name">Songs</div>
-        </div>
-        <div class="cat-card history" onclick="selectCat('History', this)">
-          <div class="cat-icon">📜</div>
-          <div class="cat-name">History</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mode selection -->
-    <div class="card" style="padding:18px 20px;">
-      <p class="section-title">🎮 Mode</p>
+    <div class="card"><p class="section-title">Game Mode</p>
       <div class="mode-grid">
-        <div class="mode-card freerun" onclick="selectMode('freerun', this)">
-          <div class="mode-icon">♾️</div>
-          <div class="mode-name">Free Run</div>
-          <div class="mode-desc">Endless questions. Go as far as you can!</div>
-        </div>
-        <div class="mode-card timebound" onclick="selectMode('timebound', this)">
-          <div class="mode-icon">⏱️</div>
-          <div class="mode-name">Time Bound</div>
-          <div class="mode-desc">Fixed questions. Beat the clock!</div>
-        </div>
+        <div class="mode-card freerun" onclick="selectMode('freerun',this)"><div class="mode-icon">♾️</div><div class="mode-name">Free Run</div><div class="mode-desc">Endless, no timer</div></div>
+        <div class="mode-card timebound" onclick="selectMode('timebound',this)"><div class="mode-icon">⏱️</div><div class="mode-name">Time Bound</div><div class="mode-desc">10-30 questions, timer</div></div>
       </div>
-
-      <!-- Time Bound settings -->
       <div id="timeboundSettings" style="display:none; margin-top:12px;">
-        <div class="settings-row">
-          <span class="settings-label">Questions</span>
-          <div class="pill-group">
-            <button class="pill active" onclick="setQCount(10, this)">10</button>
-            <button class="pill" onclick="setQCount(20, this)">20</button>
-            <button class="pill" onclick="setQCount(30, this)">30</button>
-          </div>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Time per Q</span>
-          <div class="pill-group">
-            <button class="pill" onclick="setTimer(5, this)">5s</button>
-            <button class="pill active" onclick="setTimer(10, this)">10s</button>
-            <button class="pill" onclick="setTimer(15, this)">15s</button>
-            <button class="pill" onclick="setTimer(20, this)">20s</button>
-          </div>
-        </div>
+        <div>Questions: <select id="qCountSelect"><option>10</option><option>20</option><option>30</option></select></div>
+        <div style="margin-top:8px;">Time per Q: <select id="timeSelect"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
       </div>
-
-      <button class="btn btn-pink btn-full" id="startBtn" onclick="startGame()" style="display:none; margin-top:14px;">
-        🚀 Start Game
-      </button>
+      <button class="btn btn-pink btn-full" id="startBtn" style="display:none; margin-top:16px;" onclick="startGame()">🚀 Start Quiz</button>
     </div>
-
+    <div class="ad-placeholder" onclick="showDailyQuiz()">📅 Daily Quiz → Earn 50 Coins!</div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 5: QUIZ
-  ══════════════════════════════════════════ -->
+  <!-- QUIZ SCREEN -->
   <div class="screen" id="screen-quiz">
-    <!-- Header -->
-    <div class="quiz-header">
-      <div>
-        <span class="q-num" id="qNum">Q 1 / 10</span>
-      </div>
-      <div class="q-cat-badge" id="qCatBadge">GK</div>
-      <div id="streakBadge"></div>
-    </div>
-
-    <!-- Progress -->
-    <div class="progress-bar-wrap">
-      <div class="progress-bar" id="progressBar" style="width:0%"></div>
-    </div>
-
-    <!-- Score Row -->
+    <div class="quiz-header"><span id="qNum">Q1</span><span id="qCatBadge"></span></div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
     <div class="score-row">
-      <div class="stat-chip">
-        <div class="val green-val" id="rightCount">0</div>
-        <div class="lbl">✅ Right</div>
-      </div>
-      <div class="stat-chip">
-        <div class="val red-val" id="wrongCount">0</div>
-        <div class="lbl">❌ Wrong</div>
-      </div>
-      <div class="stat-chip">
-        <div class="val sub-val" id="skipCount">0</div>
-        <div class="lbl">⏭ Skipped</div>
-      </div>
-      <div class="stat-chip">
-        <div class="val gold-val" id="liveScore">0</div>
-        <div class="lbl">🏆 Score</div>
-      </div>
+      <div class="stat-chip"><div class="val green-val" id="rightCount">0</div><div class="lbl">✅</div></div>
+      <div class="stat-chip"><div class="val red-val" id="wrongCount">0</div><div class="lbl">❌</div></div>
+      <div class="stat-chip"><div class="val sub-val" id="skipCount">0</div><div class="lbl">⏭</div></div>
+      <div class="stat-chip"><div class="val gold-val" id="liveScore">0</div><div class="lbl">🏆</div></div>
     </div>
-
-    <!-- Timer (Time Bound only — hidden in Free Run) -->
-    <div class="timer-wrap" id="timerWrap">
-      <div class="timer-ring">
-        <svg width="70" height="70" viewBox="0 0 70 70">
-          <circle class="timer-track" cx="35" cy="35" r="30"></circle>
-          <circle class="timer-prog" id="timerProg" cx="35" cy="35" r="30"></circle>
-        </svg>
-        <div class="timer-num" id="timerNum">10</div>
-      </div>
-    </div>
-
-    <!-- Question -->
-    <div class="card" style="padding:22px 20px;">
-      <p style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--sub);text-transform:uppercase;margin-bottom:12px;">Question</p>
-      <div class="question-text" id="questionText" style="min-height:70px;">Loading question...</div>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin:16px 0;"></div>
-      <div class="options-list" id="optionsList"></div>
-    </div>
-
-    <!-- Free Run: Stop Button (shown above powerups) -->
-    <div id="freerunStop" style="display:none; text-align:center; margin:14px 0 6px;">
-      <button class="btn btn-full" onclick="endFreeRun()" style="background:rgba(255,68,68,0.15);border:1.5px solid rgba(255,68,68,0.4);color:#ff6b6b;font-weight:800;">
-        ⛔ Stop & See My Results
-      </button>
-    </div>
-
-    <!-- Power-ups -->
+    <div id="timerWrap" style="text-align:center; display:none;"><span id="timerNum">10</span> sec</div>
+    <div class="card"><div class="question-text" id="questionText"></div><div id="optionsList"></div></div>
     <div class="powerups">
-      <button class="powerup-btn" id="pu-fiftyfifty" onclick="usePowerup('fiftyfifty')">
-        <span class="powerup-icon">⚡</span>
-        <span class="powerup-label">50:50</span>
-        <span class="powerup-cost">🪙 20</span>
-      </button>
-      <button class="powerup-btn" id="pu-skip" onclick="usePowerup('skip')">
-        <span class="powerup-icon">⏭</span>
-        <span class="powerup-label">Skip</span>
-        <span class="powerup-cost">🪙 10</span>
-      </button>
-      <button class="powerup-btn" id="pu-freeze" onclick="usePowerup('freeze')">
-        <span class="powerup-icon">❄️</span>
-        <span class="powerup-label">Freeze</span>
-        <span class="powerup-cost">🪙 30</span>
-      </button>
-      <button class="powerup-btn" id="pu-change" onclick="usePowerup('change')">
-        <span class="powerup-icon">🔄</span>
-        <span class="powerup-label">Change Q</span>
-        <span class="powerup-cost">🪙 15</span>
-      </button>
+      <button class="powerup-btn" onclick="usePowerup('fiftyfifty')">⚡ 50:50 (20)</button>
+      <button class="powerup-btn" onclick="usePowerup('skip')">⏭ Skip (10)</button>
+      <button class="powerup-btn" onclick="usePowerup('change')">🔄 Change Q (15)</button>
     </div>
-
-    <!-- Ad Banner -->
-    <div class="ad-banner" id="adBanner">
-      📢 Advertisement — Google AdMob
-    </div>
-
+    <div id="freerunStop" style="display:none;"><button class="btn btn-ghost btn-full" onclick="endGame()">⛔ Stop & Results</button></div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 6: RESULTS
-  ══════════════════════════════════════════ -->
+  <!-- RESULTS SCREEN -->
   <div class="screen" id="screen-result">
-    <div class="result-hero">
-      <div id="resultEmoji" style="font-size:60px;margin-bottom:10px">🎉</div>
-      <h2 id="resultTitle">Amazing!</h2>
-      <p id="resultSub" style="color:var(--sub);font-size:14px;margin:6px 0 20px"></p>
-
-      <div class="result-score-ring">
-        <svg width="140" height="140" viewBox="0 0 140 140">
-          <circle class="ring-track" cx="70" cy="70" r="60"></circle>
-          <circle class="ring-fill" id="ringFill" cx="70" cy="70" r="60" stroke-dashoffset="377"></circle>
-        </svg>
-        <div class="result-score-num">
-          <div class="big" id="finalScore">0</div>
-          <div class="small">SCORE</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="result-stats">
-      <div class="result-stat">
-        <div class="val green-val" id="res-right">0</div>
-        <div class="lbl">✅ Correct</div>
-      </div>
-      <div class="result-stat">
-        <div class="val red-val" id="res-wrong">0</div>
-        <div class="lbl">❌ Wrong</div>
-      </div>
-      <div class="result-stat">
-        <div class="val sub-val" id="res-skip">0</div>
-        <div class="lbl">⏭ Skipped</div>
-      </div>
-      <div class="result-stat">
-        <div class="val gold-val" id="res-coins">+0</div>
-        <div class="lbl">🪙 Coins Earned</div>
-      </div>
-    </div>
-
-    <!-- Wrong answers review -->
-    <div class="card" id="wrongAnswersCard" style="display:none">
-      <p class="section-title">Review Wrong Answers</p>
-      <div class="wrong-list" id="wrongList"></div>
-    </div>
-
-    <!-- Ad -->
-    <div class="ad-banner">📢 Advertisement — Google AdMob</div>
-
+    <div style="text-align:center;"><h2 id="resultTitle">Your Score</h2><div id="finalScore" style="font-size:48px;font-weight:800;">0</div></div>
+    <div class="score-row"><div class="stat-chip">✅ Correct: <span id="res-right">0</span></div><div class="stat-chip">❌ Wrong: <span id="res-wrong">0</span></div><div class="stat-chip">⏭ Skipped: <span id="res-skip">0</span></div></div>
+    <div class="result-stats">🏆 Coins earned: +<span id="res-coins">0</span></div>
+    <div id="wrongAnswersCard" style="display:none; margin:16px 0;"><p class="section-title">Review Wrong Answers</p><div id="wrongList"></div></div>
     <button class="btn btn-cyan btn-full" onclick="playAgain()">🔄 Play Again</button>
     <button class="btn btn-ghost btn-full" onclick="goHome()">🏠 Home</button>
   </div>
+</div>
 
-</div><!-- end #app -->
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-
 <script>
-// ╔════════════════════════════════════════╗
-//   FIREBASE CONFIG
-// ╚════════════════════════════════════════╝
+// -------------------------- FIREBASE CONFIG --------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyCkSNiFrju355cCtsby_SHCJuTfMkDbNQM",
   authDomain: "quiz-game-app-ba331.firebaseapp.com",
@@ -1308,19 +241,17 @@ const firebaseConfig = {
   messagingSenderId: "370473953623",
   appId: "1:370473953623:web:7f4c9612b7c029e0c4b612"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// ╔════════════════════════════════════════╗
-//   STATE
-// ╚════════════════════════════════════════╝
+// -------------------------- GLOBALS --------------------------
 let coins = parseInt(localStorage.getItem('qm_coins') || '50');
+let currentUser = null;
 let state = {
   language: 'English',
   category: null,
-  mode: null,        // 'freerun' | 'timebound'
+  mode: null,
   qCount: 10,
   timePerQ: 10,
   questions: [],
@@ -1331,770 +262,376 @@ let state = {
   wrongCount: 0,
   skipCount: 0,
   streak: 0,
-  wrongAnswers: [],  // {q, yourAns, rightAns}
+  wrongAnswers: [],
   timerInterval: null,
-  timeLeft: 10,
-  isFrozen: false,
-  masterQuestions: [],
+  timeLeft: 10
 };
 
-// ╔════════════════════════════════════════╗
-//   DIAGNOSTIC — runs once on load after auth
-//   Shows exact Firestore field names in console
-// ╚════════════════════════════════════════╝
-async function runDiagnostic() {
-  try {
-    const snap = await db.collection('questions').limit(3).get();
-    if (snap.empty) { console.warn('🔴 questions collection is empty!'); return; }
+// 10 categories – first 3 unlocked, others locked
+const ALL_CATEGORIES = [
+  { name: "General Knowledge", key: "GK", locked: false },
+  { name: "Sports", key: "Sports", locked: false },
+  { name: "Bollywood", key: "Bollywood", locked: false },
+  { name: "Science", key: "Science", locked: true },
+  { name: "Songs", key: "Songs", locked: true },
+  { name: "History", key: "History", locked: true },
+  { name: "Geography", key: "Geography", locked: true },
+  { name: "Technology", key: "Technology", locked: true },
+  { name: "Animals", key: "Animals", locked: true },
+  { name: "Comics", key: "Comics", locked: true }
+];
 
-    console.group('🔍 FIRESTORE DIAGNOSTIC');
-    snap.docs.forEach((doc, i) => {
-      const d = doc.data();
-      console.log(`\n--- Doc ${i+1} (id: ${doc.id}) ---`);
-      Object.entries(d).forEach(([k, v]) => console.log(`  "${k}": ${JSON.stringify(v)}`));
-    });
-    console.groupEnd();
+let unlockedCategories = [];
 
-    // Show a visible toast with detected language field
-    const sample = snap.docs[0].data();
-    const langField = ['language','Language','lang','Lang'].find(f => sample[f] !== undefined);
-    const catField  = ['category','Category','type','Type'].find(f => sample[f] !== undefined);
-    console.log(`\n✅ Detected: catField="${catField}", langField="${langField}"`);
-    console.log(`   Sample values: category="${sample[catField]}", language="${sample[langField]}"`);
-
-    // Store detected field names globally for use in queries
-    window._catField  = catField  || 'category';
-    window._langField = langField || 'language';
-    window._sampleCatValue  = sample[catField]  || '';
-    window._sampleLangValue = sample[langField] || '';
-
-    showToast(`DB fields: cat="${catField}" lang="${langField}" | sample lang="${sample[langField]}"`);
-  } catch(e) {
-    console.error('Diagnostic failed:', e.message);
-  }
+// -------------------------- UI HELPERS --------------------------
+function showToast(msg){
+  let t = document.getElementById('toast');
+  t.innerText = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
 }
-function initParticles() {
-  const wrap = document.getElementById('particles');
-  for (let i = 0; i < 25; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = Math.random() * 100 + 'vw';
-    p.style.animationDuration = (4 + Math.random() * 10) + 's';
-    p.style.animationDelay = (Math.random() * 12) + 's';
-    const colors = ['var(--cyan)', 'var(--pink)', 'var(--gold)', 'var(--purple)'];
-    p.style.background = colors[Math.floor(Math.random() * colors.length)];
-    wrap.appendChild(p);
-  }
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
-initParticles();
-
-// ╔════════════════════════════════════════╗
-//   COIN SYSTEM
-// ╚════════════════════════════════════════╝
-function updateCoinDisplay() {
-  document.getElementById('coinCount').textContent = coins;
-}
-
-function earnCoins(amount, x, y) {
-  coins += amount;
+function updateCoinDisplay(){ document.getElementById('coinCount').innerText = coins; }
+function earnCoins(amt){
+  coins += amt;
   localStorage.setItem('qm_coins', coins);
   updateCoinDisplay();
-  // Persist to Firestore for logged-in user
-  const user = auth.currentUser;
-  if (user) db.collection('users').doc(user.uid).set({ coins }, { merge: true });
-  // Floating coin pop
-  const pop = document.createElement('div');
-  pop.className = 'coin-pop';
-  pop.textContent = '+' + amount + ' 🪙';
-  pop.style.left = (x || window.innerWidth/2) + 'px';
-  pop.style.top  = (y || 200) + 'px';
-  document.body.appendChild(pop);
-  setTimeout(() => pop.remove(), 1000);
+  if(currentUser) db.collection('users').doc(currentUser.uid).set({coins}, {merge:true});
+  showToast(`+${amt} 🪙`);
 }
-
-function spendCoins(amount) {
-  if (coins < amount) { showToast('Not enough coins! 🪙'); return false; }
-  coins -= amount;
+function spendCoins(amt){
+  if(coins<amt){ showToast(`Need ${amt} coins!`); return false; }
+  coins -= amt;
   localStorage.setItem('qm_coins', coins);
   updateCoinDisplay();
+  if(currentUser) db.collection('users').doc(currentUser.uid).set({coins}, {merge:true});
   return true;
 }
-
-updateCoinDisplay();
-let dailyData = {
-  lastDate: localStorage.getItem('qm_daily_date') || null
-};
-
-function getToday() {
-  return new Date().toISOString().split('T')[0];
-}
-// ╔════════════════════════════════════════╗
-//   SCREENS
-// ╚════════════════════════════════════════╝
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0,0);
-}
-
-// ╔════════════════════════════════════════╗
-//   TOAST
-// ╚════════════════════════════════════════╝
-let toastTimeout;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ╔════════════════════════════════════════╗
-//   AUTH — PERSISTENT LOGIN
-// ╚════════════════════════════════════════╝
-
-// Firebase keeps session alive across browser restarts automatically.
-// onAuthStateChanged fires immediately on load — if user is already
-// signed in it skips the login screen entirely.
-
-auth.onAuthStateChanged(user => {
-  if (user) {
-    // ✅ Already logged in — go straight to language/home
-    onUserReady(user);
+// -------------------------- AUTH --------------------------
+auth.onAuthStateChanged(async user => {
+  if(user){
+    currentUser = user;
+    let avatarWrap = document.getElementById('userAvatarWrap');
+    avatarWrap.style.display = 'block';
+    avatarWrap.innerHTML = `<img class="user-avatar" src="${user.photoURL || ''}" onerror="this.src='https://via.placeholder.com/34'">`;
+    let doc = await db.collection('users').doc(user.uid).get();
+    if(doc.exists){
+      coins = doc.data().coins || 50;
+      unlockedCategories = doc.data().unlockedCategories || [];
+    }
+    if(!unlockedCategories.length) unlockedCategories = ALL_CATEGORIES.filter(c=>!c.locked).map(c=>c.key);
+    localStorage.setItem('qm_coins', coins);
+    updateCoinDisplay();
+    showScreen('screen-language');
+    renderCategories();
   } else {
-    // ❌ Not logged in — show login screen
+    currentUser = null;
+    document.getElementById('userAvatarWrap').style.display = 'none';
+    let guestUnlocked = localStorage.getItem('guestUnlocked');
+    if(guestUnlocked) unlockedCategories = JSON.parse(guestUnlocked);
+    else unlockedCategories = ALL_CATEGORIES.filter(c=>!c.locked).map(c=>c.key);
     showScreen('screen-login');
   }
 });
-
-function onUserReady(user) {
-  // Show user avatar in top bar
-  const wrap = document.getElementById('userAvatarWrap');
-  wrap.style.display = 'block';
-  if (user.photoURL) {
-    wrap.innerHTML = `<img class="user-avatar" src="${user.photoURL}" alt="${user.displayName}" referrerpolicy="no-referrer">`;
-  } else {
-    const initials = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
-    wrap.innerHTML = `<div class="user-avatar-placeholder">${initials}</div>`;
-  }
-
-  // Populate user menu
-  document.getElementById('userMenuName').textContent = user.displayName || 'Player';
-  document.getElementById('userMenuEmail').textContent = user.email || '';
-
-  // Load coins from Firestore (per user) or localStorage fallback
-  db.collection('users').doc(user.uid).get().then(doc => {
-    if (doc.exists && doc.data().coins !== undefined) {
-      coins = doc.data().coins;
-    }
-    updateCoinDisplay();
-  }).catch(() => { updateCoinDisplay(); });
-
-  showScreen('screen-mode');
-  runDiagnostic();
-  checkDailyPopup();
+function login(){ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+function logout(){ auth.signOut(); localStorage.removeItem('qm_coins'); showScreen('screen-login'); }
+function guestLogin(){
+  currentUser = null;
+  let guest = localStorage.getItem('guestUnlocked');
+  unlockedCategories = guest ? JSON.parse(guest) : ALL_CATEGORIES.filter(c=>!c.locked).map(c=>c.key);
+  coins = parseInt(localStorage.getItem('qm_coins') || '50');
+  updateCoinDisplay();
+  showScreen('screen-language');
+  renderCategories();
 }
-function checkDailyPopup() {
-  const today = getToday();
-
-  if (dailyData.lastDate !== today) {
-    setTimeout(() => {
-      openDailyPopup();
-    }, 800);
-  }
-}
-  function openDailyPopup() {
-  document.getElementById('dailyPopup').style.display = 'flex';
-}
-
-function closeDailyPopup() {
-  document.getElementById('dailyPopup').style.display = 'none';
-}
-  function startDailyQuiz() {
-  closeDailyPopup();
-
-  state.category = 'GK';
-  state.mode = 'timebound';
-  state.qCount = 5;
-  state.timePerQ = 10;
-
-  state.isDaily = true; // 🔥 IMPORTANT FLAG
-
-  startGame();
-}
-function login() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider)
-    .then(result => onUserReady(result.user))
-    .catch(err => {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        showToast('Login failed: ' + err.message);
-      }
-    });
-}
-
-function logout() {
-  closeUserMenu();
-  auth.signOut().then(() => {
-    document.getElementById('userAvatarWrap').style.display = 'none';
-    showScreen('screen-login');
-    showToast('👋 Signed out successfully');
-  });
-}
-
-function toggleUserMenu() {
+function toggleUserMenu(){
   document.getElementById('userMenu').classList.toggle('open');
 }
-
-function closeUserMenu() {
-  document.getElementById('userMenu').classList.remove('open');
-}
-
-// Close menu on outside click
-document.addEventListener('click', e => {
-  const menu = document.getElementById('userMenu');
-  const avatar = document.getElementById('userAvatarWrap');
-  if (!menu.contains(e.target) && !avatar.contains(e.target)) {
-    closeUserMenu();
-  }
-});
-
-function guestLogin() {
-  document.getElementById('userAvatarWrap').style.display = 'none';
-  showScreen('screen-mode');
-}
-
-// ╔════════════════════════════════════════╗
-//   LANGUAGE
-// ╚════════════════════════════════════════╝
-function selectLang(lang, el) {
-  // Deselect all lang buttons everywhere on the page
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+// -------------------------- LANGUAGES --------------------------
+function selectLang(lang, el){
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
   state.language = lang;
-  console.log('🌐 Language set to:', lang);
-  showToast('Language: ' + lang);
 }
-
-function goToCategory() {
-  showScreen('screen-category');
+function goToCategory(){ showScreen('screen-category'); renderCategories(); }
+function renderCategories(){
+  let grid = document.getElementById('categoryGrid');
+  grid.innerHTML = '';
+  ALL_CATEGORIES.forEach(cat=>{
+    let isUnlocked = unlockedCategories.includes(cat.key);
+    let div = document.createElement('div');
+    div.className = `cat-card ${!isUnlocked ? 'locked' : ''}`;
+    let icon = "";
+    if(cat.key==='GK') icon="🌍";
+    else if(cat.key==='Sports') icon="🏏";
+    else if(cat.key==='Bollywood') icon="🎬";
+    else if(cat.key==='Science') icon="🔬";
+    else if(cat.key==='Songs') icon="🎵";
+    else if(cat.key==='History') icon="📜";
+    else if(cat.key==='Geography') icon="🗺️";
+    else if(cat.key==='Technology') icon="💻";
+    else if(cat.key==='Animals') icon="🐘";
+    else icon="🦸";
+    div.innerHTML = `<div class="cat-icon">${icon}</div><div class="cat-name">${cat.name}</div>`;
+    if(isUnlocked){
+      div.onclick = ()=>{ selectCat(cat.key, div); };
+    } else {
+      div.onclick = ()=> unlockCategory(cat);
+    }
+    grid.appendChild(div);
+  });
 }
-
-// ╔════════════════════════════════════════╗
-//   CATEGORY
-// ╚════════════════════════════════════════╝
-function selectCat(cat, el) {
-  document.querySelectorAll('.cat-card').forEach(c => c.style.borderColor = '');
+function selectCat(cat, el){
+  document.querySelectorAll('.cat-card').forEach(c=>c.style.borderColor='');
   el.style.borderColor = 'var(--cyan)';
   state.category = cat;
-  // Show start if mode already picked
-  if (state.mode) document.getElementById('startBtn').style.display = 'block';
-  // Keep old catNextBtn if it exists (on old category screen)
-  const nb = document.getElementById('catNextBtn');
-  if (nb) nb.style.display = 'block';
+  document.getElementById('catNextBtn').style.display = 'block';
 }
-
-function goToMode() {
-  if (!state.category) { showToast('Please select a category first!'); return; }
+function unlockCategory(cat){
+  if(unlockedCategories.includes(cat.key)) return;
+  let choice = confirm(`Unlock "${cat.name}"?\nOK = Watch ad (free)\nCancel = Pay 100 coins`);
+  if(choice){
+    showToast('📺 Ad watched! Category unlocked');
+    unlockedCategories.push(cat.key);
+    if(currentUser) db.collection('users').doc(currentUser.uid).set({unlockedCategories}, {merge:true});
+    else localStorage.setItem('guestUnlocked', JSON.stringify(unlockedCategories));
+    renderCategories();
+  } else {
+    if(spendCoins(100)){
+      unlockedCategories.push(cat.key);
+      if(currentUser) db.collection('users').doc(currentUser.uid).set({unlockedCategories}, {merge:true});
+      else localStorage.setItem('guestUnlocked', JSON.stringify(unlockedCategories));
+      renderCategories();
+      showToast(`✅ ${cat.name} unlocked!`);
+    }
+  }
+}
+function goToMode(){
+  if(!state.category){ showToast('Select a category first'); return; }
   showScreen('screen-mode');
 }
-
-// ╔════════════════════════════════════════╗
-//   MODE
-// ╚════════════════════════════════════════╝
-function selectMode(mode, el) {
-  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+function selectMode(mode, el){
+  document.querySelectorAll('.mode-card').forEach(m=>m.classList.remove('selected'));
   el.classList.add('selected');
   state.mode = mode;
-  document.getElementById('timeboundSettings').style.display = mode === 'timebound' ? 'block' : 'none';
-  // Show start button only when category is also picked
-  document.getElementById('startBtn').style.display = state.category ? 'block' : 'none';
+  document.getElementById('timeboundSettings').style.display = mode==='timebound'?'block':'none';
+  document.getElementById('startBtn').style.display = 'block';
+  if(mode==='timebound'){
+    state.qCount = parseInt(document.getElementById('qCountSelect').value);
+    state.timePerQ = parseInt(document.getElementById('timeSelect').value);
+  } else {
+    state.qCount = 0; // infinite
+  }
 }
-
-function setQCount(n, el) {
-  document.querySelectorAll('#timeboundSettings .pill').slice(0,3).forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  state.qCount = n;
-}
-
-function setTimer(n, el) {
-  const pills = document.querySelectorAll('#timeboundSettings .pill');
-  pills.forEach((p, i) => { if (i >= 3) p.classList.remove('active'); });
-  el.classList.add('active');
-  state.timePerQ = n;
-}
-
-// ╔════════════════════════════════════════╗
-//   DEMO QUESTIONS (fallback)
-// ╚════════════════════════════════════════╝
-const demoQuestions = {
-  GK: [
-    { q: "What is the capital of India?", opts: ["Mumbai","New Delhi","Kolkata","Chennai"], ans: 1 },
-    { q: "Who wrote the Indian National Anthem?", opts: ["Bankim Chandra","Rabindranath Tagore","Mahatma Gandhi","Sarojini Naidu"], ans: 1 },
-    { q: "How many states are in India?", opts: ["25","26","28","29"], ans: 2 },
-    { q: "Which planet is known as the Red Planet?", opts: ["Jupiter","Mars","Saturn","Venus"], ans: 1 },
-    { q: "What is the largest ocean on Earth?", opts: ["Atlantic","Indian","Arctic","Pacific"], ans: 3 },
-    { q: "Who invented the telephone?", opts: ["Edison","Bell","Tesla","Marconi"], ans: 1 },
-    { q: "What is the currency of Japan?", opts: ["Yuan","Won","Yen","Ringgit"], ans: 2 },
-    { q: "How many sides does a hexagon have?", opts: ["5","6","7","8"], ans: 1 },
-    { q: "Which is the longest river in the world?", opts: ["Amazon","Nile","Yangtze","Mississippi"], ans: 1 },
-    { q: "Who painted the Mona Lisa?", opts: ["Michelangelo","Van Gogh","Leonardo da Vinci","Picasso"], ans: 2 },
-    { q: "What gas do plants absorb from the atmosphere?", opts: ["Oxygen","Nitrogen","CO2","Hydrogen"], ans: 2 },
-    { q: "Which country has the largest population?", opts: ["USA","India","China","Russia"], ans: 2 },
-    { q: "What is the speed of light (approx)?", opts: ["200,000 km/s","300,000 km/s","150,000 km/s","400,000 km/s"], ans: 1 },
-    { q: "Which sport is associated with Wimbledon?", opts: ["Cricket","Football","Tennis","Golf"], ans: 2 },
-    { q: "What is H2O commonly known as?", opts: ["Salt","Water","Sugar","Hydrogen"], ans: 1 },
-  ],
-  Sports: [
-    { q: "How many players are on a cricket team?", opts: ["9","10","11","12"], ans: 2 },
-    { q: "Where were the 2020 Summer Olympics held?", opts: ["Paris","London","Tokyo","Beijing"], ans: 2 },
-    { q: "Who holds the record for most Test centuries?", opts: ["Lara","Tendulkar","Kohli","Ponting"], ans: 1 },
-    { q: "How many Grand Slam tournaments are in tennis?", opts: ["2","3","4","5"], ans: 2 },
-    { q: "Which country invented football (soccer)?", opts: ["Brazil","France","England","Germany"], ans: 2 },
-    { q: "In cricket, how many balls are in an over?", opts: ["4","5","6","7"], ans: 2 },
-    { q: "Who is the fastest man on earth (100m)?", opts: ["Bolt","Gay","Powell","Coleman"], ans: 0 },
-    { q: "How many rings are in the Olympic flag?", opts: ["4","5","6","7"], ans: 1 },
-    { q: "Which country has won most FIFA World Cups?", opts: ["Germany","Argentina","Italy","Brazil"], ans: 3 },
-    { q: "What is the highest score in a single innings in Test cricket?", opts: ["400*","375","365","390"], ans: 0 },
-  ],
-  Bollywood: [
-    { q: "Which film won the first Filmfare Best Film Award?", opts: ["Mother India","Do Bigha Zamin","Aan","Mughal-E-Azam"], ans: 1 },
-    { q: "Who is known as 'The King of Bollywood'?", opts: ["Amitabh Bachchan","Shah Rukh Khan","Salman Khan","Aamir Khan"], ans: 1 },
-    { q: "Which Bollywood film had the highest opening day collection ever?", opts: ["KGF2","Baahubali 2","Pathaan","Tiger 3"], ans: 2 },
-    { q: "Who directed the film 'Dilwale Dulhania Le Jayenge'?", opts: ["Karan Johar","Aditya Chopra","Yash Chopra","Sooraj Barjatya"], ans: 1 },
-    { q: "Which actress starred in 'Mother India' (1957)?", opts: ["Madhubala","Meena Kumari","Nargis","Waheeda Rehman"], ans: 2 },
-    { q: "What does 'DDLJ' stand for?", opts: ["Dil Deke Le Jaana","Dilwale Dulhania Le Jayenge","Dil Dosti Love Jugaad","Dil Dhak Le Jayenge"], ans: 1 },
-    { q: "Who sang the song 'Kal Ho Na Ho'?", opts: ["Sonu Nigam","Udit Narayan","Kumar Sanu","KK"], ans: 0 },
-    { q: "Which film had the song 'Chaiyya Chaiyya'?", opts: ["Kuch Kuch Hota Hai","Dil Se","Lagaan","Swades"], ans: 1 },
-    { q: "Who played the role of Gabbar Singh in Sholay?", opts: ["Dharmendra","Amitabh Bachchan","Amjad Khan","Sanjeev Kumar"], ans: 2 },
-    { q: "Which year did 'Mughal-E-Azam' release?", opts: ["1955","1957","1960","1962"], ans: 2 },
-  ],
-  Science: [
-    { q: "What is the chemical symbol for Gold?", opts: ["Go","Gd","Au","Ag"], ans: 2 },
-    { q: "How many bones are in the adult human body?", opts: ["186","206","226","246"], ans: 1 },
-    { q: "What is the powerhouse of the cell?", opts: ["Nucleus","Ribosome","Mitochondria","Chloroplast"], ans: 2 },
-    { q: "What is the atomic number of Carbon?", opts: ["4","5","6","7"], ans: 2 },
-    { q: "Which planet is closest to the Sun?", opts: ["Venus","Earth","Mars","Mercury"], ans: 3 },
-    { q: "What is the most abundant gas in Earth's atmosphere?", opts: ["Oxygen","Nitrogen","CO2","Argon"], ans: 1 },
-    { q: "What is Newton's first law also called?", opts: ["Law of Acceleration","Law of Gravitation","Law of Inertia","Law of Reaction"], ans: 2 },
-    { q: "What is the speed of sound in air (approx)?", opts: ["200 m/s","343 m/s","440 m/s","600 m/s"], ans: 1 },
-    { q: "Which element has the symbol 'Fe'?", opts: ["Fluorine","Iron","Francium","Fermium"], ans: 1 },
-    { q: "What type of bond is H2O?", opts: ["Ionic","Metallic","Covalent","Hydrogen"], ans: 2 },
-  ],
-  Songs: [
-    { q: "Which film has the song 'Tum Hi Ho'?", opts: ["Barfi","Yeh Jawaani Hai Deewani","Aashiqui 2","Raazi"], ans: 2 },
-    { q: "Who sang 'Lag Ja Gale'?", opts: ["Asha Bhosle","Geeta Dutt","Lata Mangeshkar","Suman Kalyanpur"], ans: 2 },
-    { q: "Which singer is known as the Nightingale of India?", opts: ["Asha Bhosle","Lata Mangeshkar","Shreya Ghoshal","Kavita Krishnamurthy"], ans: 1 },
-    { q: "Which film has the song 'Ek Do Teen'?", opts: ["Tezaab","Dil","Maine Pyaar Kiya","Ram Lakhan"], ans: 0 },
-    { q: "Who composed the famous song 'Vande Mataram'?", opts: ["Rabindranath Tagore","Bankim Chandra Chattopadhyay","Subramanya Bharati","Sarojini Naidu"], ans: 1 },
-    { q: "Which year did AR Rahman win his first Oscar?", opts: ["2007","2008","2009","2010"], ans: 2 },
-    { q: "Who sang the title track of 'Kal Ho Na Ho'?", opts: ["Udit Narayan","Sonu Nigam","KK","Shaan"], ans: 1 },
-    { q: "Which song holds the record for most views on YouTube in India?", opts: ["Kala Chashma","Naatu Naatu","Kesariya","Butter"], ans: 1 },
-    { q: "Who is the music composer of the film 'Lagaan'?", opts: ["Shankar–Ehsaan–Loy","AR Rahman","Vishal-Shekhar","Pritam"], ans: 1 },
-    { q: "What instrument does Zakir Hussain play?", opts: ["Sitar","Tabla","Flute","Violin"], ans: 1 },
-  ],
-  History: [
-    { q: "When did India gain independence?", opts: ["1945","1946","1947","1948"], ans: 2 },
-    { q: "Who was the first Prime Minister of India?", opts: ["Sardar Patel","B.R. Ambedkar","Jawaharlal Nehru","Rajendra Prasad"], ans: 2 },
-    { q: "Which empire built the Taj Mahal?", opts: ["Maratha","British Raj","Mughal","Chola"], ans: 2 },
-    { q: "Who was the last Viceroy of India?", opts: ["Lord Curzon","Lord Mountbatten","Lord Wavell","Lord Linlithgow"], ans: 1 },
-    { q: "When did World War II end?", opts: ["1943","1944","1945","1946"], ans: 2 },
-    { q: "Who founded the Maurya Empire?", opts: ["Ashoka","Chandragupta Maurya","Bindusara","Pushyamitra"], ans: 1 },
-    { q: "Which city was the capital of British India?", opts: ["Mumbai","Delhi","Madras","Calcutta"], ans: 3 },
-    { q: "When was the Indian Constitution adopted?", opts: ["15 Aug 1947","26 Jan 1950","2 Oct 1948","26 Nov 1949"], ans: 1 },
-    { q: "Who gave the 'Tryst with Destiny' speech?", opts: ["Gandhi","Nehru","Patel","Azad"], ans: 1 },
-    { q: "Which was the first satellite launched by India?", opts: ["Bhaskara","Rohini","Aryabhata","INSAT-1A"], ans: 2 },
-  ]
-};
-
-// ╔════════════════════════════════════════╗
-//   START GAME
-// ╚════════════════════════════════════════╝
-async function startGame() {
-  if (!state.mode)     { showToast('Select a game mode!'); return; }
-  if (!state.category) { showToast('Please select a category!'); return; }
-
-  // Reset state
-  state.score = 0; state.rightCount = 0; state.wrongCount = 0;
-  state.skipCount = 0; state.streak = 0; state.wrongAnswers = [];
-  state.qIndex = 0;
-  clearInterval(state.timerInterval);
-
-  // Show quiz screen with loading state
-  showScreen('screen-quiz');
-  document.getElementById('qCatBadge').textContent = state.category + ' • ' + state.language;
-  document.getElementById('freerunStop').style.display = state.mode === 'freerun' ? 'block' : 'none';
-  // Timer only shown in Time Bound mode
-  document.getElementById('timerWrap').style.display = state.mode === 'timebound' ? 'flex' : 'none';
-  // Freeze powerup only useful in Time Bound
-  document.getElementById('pu-freeze').style.display = state.mode === 'timebound' ? 'flex' : 'none';
-  document.getElementById('questionText').textContent = 'Loading questions...';
-  document.getElementById('optionsList').innerHTML = '';
-  updateScoreRow();
-
-  // ── FIRESTORE FETCH ──────────────────────────────────────────
-  // DB structure per doc:
-  //   category: "GK"
-  //   question_en: "National sport?"
-  //   question_hi: "राष्ट्रीय खेल?"
-  //   question_mr: "राष्ट्रीय खेळ?"
-  //   options: ["Cricket","Hockey","Football","Kabaddi"]
-  //   answer: 1
-
-  // Map selected language to the correct question field
-  const langFieldMap = {
-    'English':  'question_en',
-    'Hindi':    'question_hi',
-    'Marathi':  'question_mr',
+// -------------------------- DEMO FALLBACK QUESTIONS --------------------------
+function getDemoQuestions(category, langCode){
+  const fallback = {
+    GK: [{q_en:"What is capital of India?",q_hi:"भारत की राजधानी?",q_mr:"भारताची राजधानी?", opts_en:["Delhi","Mumbai","Kolkata","Chennai"], opts_hi:["दिल्ली","मुंबई","कोलकाता","चेन्नई"], opts_mr:["दिल्ली","मुंबई","कोलकाता","चेन्नई"], ans:0}],
+    Sports: [{q_en:"How many players in cricket?",q_hi:"क्रिकेट में कितने खिलाड़ी?",q_mr:"क्रिकेटमध्ये किती खेळाडू?", opts_en:["11","10","12","9"], opts_hi:["11","10","12","9"], opts_mr:["11","10","12","9"], ans:0}]
   };
-  const qField = langFieldMap[state.language] || 'question_en';
-  console.log(`🌐 Language="${state.language}" → using field "${qField}"`);
-
+  let catFallback = fallback[category] || fallback.GK;
+  return catFallback.map(q => ({
+    q: q[`q_${langCode}`] || q.q_en,
+    opts: q[`opts_${langCode}`] || q.opts_en,
+    ans: q.ans
+  }));
+}
+// -------------------------- QUIZ ENGINE --------------------------
+async function startGame(){
+  if(!state.mode || !state.category) return;
+  state.score=0; state.rightCount=0; state.wrongCount=0; state.skipCount=0; state.wrongAnswers=[];
+  state.qIndex=0; state.streak=0;
+  let suffix = state.language==='English'?'en':state.language==='Hindi'?'hi':'mr';
+  let qField = `question_${suffix}`;
+  let optsField = `options_${suffix}`;
+  let snap;
   try {
-    // Query by category — all languages are in the same doc
-    const snap = await db.collection('questions')
-      .where('category', '==', state.category)
-      .get();
-
-    if (!snap.empty) {
-      console.log(`✅ ${snap.docs.length} docs found for category "${state.category}"`);
-      console.log('📄 Sample doc:', snap.docs[0].data());
-
-      state.questions = snap.docs.map(doc => {
-        const d = doc.data();
-        // Pick question in selected language, fall back to English
-        const qText = d[qField] || d['question_en'] || d.question || '';
-
-        // Pick options in selected language too
-        const optFieldMap = {
-          'English':  'options',
-          'Hindi':    'options_hi',
-          'Marathi':  'options_mr',
-        };
-        const optField = optFieldMap[state.language] || 'options';
-        const opts = d[optField] || d.options || d.Options || d.choices || [];
-
-        const ans = d.answer !== undefined ? d.answer
-                  : d.correctAnswer !== undefined ? d.correctAnswer : 0;
-        return {
-          q:    String(qText).trim(),
-          opts: Array.isArray(opts) ? opts : [],
-          ans:  Number(ans)
-        };
-      }).filter(q => q.q.length > 0 && q.opts.length >= 2);
-
-      console.log(`🎮 ${state.questions.length} valid questions ready in "${state.language}"`);
-
-      if (state.questions.length === 0) {
-        showToast('No valid questions found — check console');
-        state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
+    snap = await db.collection('questions').where('category','==',state.category).get();
+  } catch(e){ snap = { empty: true }; }
+  let qlist = [];
+  if(!snap.empty){
+    snap.forEach(doc=>{
+      let d = doc.data();
+      let qtext = d[qField];
+      let opts = d[optsField];
+      if(qtext && opts && opts.length>=2){
+        qlist.push({ q: qtext, opts: opts, ans: d.answer });
       }
-    } else {
-      console.warn(`No docs found for category="${state.category}" — using demo data`);
-      state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
-    }
-  } catch(e) {
-    console.error('🔥 Firestore error:', e.message);
-    showToast('DB error — using sample questions');
-    state.questions = [...(demoQuestions[state.category] || demoQuestions.GK)];
+    });
   }
-
-  // Master copy for infinite Free Run recycling
-  state.masterQuestions = [...state.questions];
-
-  // Shuffle
-  state.questions.sort(() => Math.random() - 0.5);
-
-  if (state.mode === 'timebound') {
-    state.questions = state.questions.slice(0, state.qCount);
+  if(qlist.length===0){
+    showToast('Using demo questions (Firestore empty or error)');
+    qlist = getDemoQuestions(state.category, suffix);
   }
-
-  updateScoreRow();
+  state.questions = qlist.sort(()=>Math.random()-0.5);
+  if(state.mode==='timebound'){
+    let limit = state.qCount || 10;
+    state.questions = state.questions.slice(0, limit);
+  }
+  showScreen('screen-quiz');
+  document.getElementById('freerunStop').style.display = state.mode==='freerun'?'block':'none';
+  document.getElementById('timerWrap').style.display = state.mode==='timebound'?'block':'none';
+  document.getElementById('qCatBadge').innerText = state.category;
+  updateScoreUI();
   nextQuestion();
 }
-
-// ╔════════════════════════════════════════╗
-//   NEXT QUESTION
-// ╚════════════════════════════════════════╝
-function nextQuestion() {
-  clearInterval(state.timerInterval);
-  state.isFrozen = false;
-
-  // In Free Run: recycle questions when pool is exhausted
-  if (state.questions.length === 0) {
-    if (state.mode === 'freerun') {
-      // Reshuffle master copy and keep going
-      state.questions = [...state.masterQuestions].sort(() => Math.random() - 0.5);
+function nextQuestion(){
+  if(state.questions.length===0){
+    if(state.mode==='freerun'){
+      // no more questions in free run – end game?
+      endGame();
+      return;
     } else {
       endGame();
       return;
     }
   }
-
-  const idx = Math.floor(Math.random() * state.questions.length);
-  state.currentQ = state.questions[idx];
-  state.questions.splice(idx, 1);
-  state.qIndex++;
-
-  // Q number display
-  const total = state.mode === 'timebound' ? state.qCount : '∞';
-  document.getElementById('qNum').textContent = `Q ${state.qIndex} / ${total}`;
-
-  // Progress bar (only for timebound)
-  if (state.mode === 'timebound') {
-    const pct = ((state.qIndex - 1) / state.qCount) * 100;
-    document.getElementById('progressBar').style.width = pct + '%';
-  } else {
-    document.getElementById('progressBar').style.width = '0%';
-  }
-
-  document.getElementById('questionText').textContent = state.currentQ.q;
-
-  // Build options
-  const opts = document.getElementById('optionsList');
-  opts.innerHTML = '';
-  const letters = ['A','B','C','D'];
-  state.currentQ.opts.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
-    btn.setAttribute('data-idx', i);
-    btn.onclick = () => checkAnswer(i, btn);
-    opts.appendChild(btn);
-  });
-
-  // Streak display
-  const sb = document.getElementById('streakBadge');
-  if (state.streak >= 3) {
-    sb.innerHTML = `<span class="streak-badge">🔥 ${state.streak} Streak</span>`;
-  } else {
-    sb.innerHTML = '';
-  }
-
-  // Enable powerups
-  ['fiftyfifty','skip','freeze','change'].forEach(id => {
-    document.getElementById('pu-' + id).disabled = false;
-  });
-
-  startTimer();
-}
-
-// ╔════════════════════════════════════════╗
-//   TIMER
-// ╚════════════════════════════════════════╝
-function startTimer() {
-  // Free Run has no timer at all
-  if (state.mode === 'freerun') return;
-
-  state.timeLeft = state.timePerQ;
-  updateTimerUI(state.timeLeft);
-
-  state.timerInterval = setInterval(() => {
-    if (state.isFrozen) return;
-    state.timeLeft--;
-    updateTimerUI(state.timeLeft);
-    if (state.timeLeft <= 0) {
-      clearInterval(state.timerInterval);
-      state.skipCount++;
-      updateScoreRow();
-      showToast("⏱ Time's up! Next question...");
-      setTimeout(nextQuestion, 800);
-    }
-  }, 1000);
-}
-
-function updateTimerUI(t) {
-  const max = state.timePerQ;
-  const pct = t / max;
-  const circumference = 188.5;
-  const offset = circumference * (1 - pct);
-  const prog = document.getElementById('timerProg');
-  prog.style.strokeDashoffset = offset;
-
-  // Color
-  if (pct > 0.5) prog.style.stroke = 'var(--cyan)';
-  else if (pct > 0.25) prog.style.stroke = 'var(--gold)';
-  else prog.style.stroke = 'var(--red)';
-
-  document.getElementById('timerNum').textContent = t;
-}
-
-// ╔════════════════════════════════════════╗
-//   CHECK ANSWER
-// ╚════════════════════════════════════════╝
-function checkAnswer(idx, btn) {
   clearInterval(state.timerInterval);
-  const correct = state.currentQ.ans;
-  const allBtns = document.querySelectorAll('.option-btn');
-  allBtns.forEach(b => b.onclick = null);
-
-  if (idx === correct) {
+  let idx = Math.floor(Math.random()*state.questions.length);
+  state.currentQ = state.questions[idx];
+  state.questions.splice(idx,1);
+  state.qIndex++;
+  document.getElementById('questionText').innerHTML = state.currentQ.q;
+  let optsDiv = document.getElementById('optionsList');
+  optsDiv.innerHTML = '';
+  state.currentQ.opts.forEach((opt,i)=>{
+    let btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerText = `${String.fromCharCode(65+i)}. ${opt}`;
+    btn.onclick = ()=>checkAnswer(i,btn);
+    optsDiv.appendChild(btn);
+  });
+  if(state.mode==='timebound'){
+    state.timeLeft = state.timePerQ;
+    document.getElementById('timerNum').innerText = state.timeLeft;
+    state.timerInterval = setInterval(()=>{
+      if(state.timeLeft<=1){
+        clearInterval(state.timerInterval);
+        state.skipCount++;
+        updateScoreUI();
+        showToast("Time's up!");
+        nextQuestion();
+      } else {
+        state.timeLeft--;
+        document.getElementById('timerNum').innerText = state.timeLeft;
+      }
+    },1000);
+  }
+  updateScoreUI();
+}
+function checkAnswer(idx,btn){
+  if(state.mode==='timebound') clearInterval(state.timerInterval);
+  let correct = state.currentQ.ans;
+  if(idx===correct){
     btn.classList.add('correct');
     state.rightCount++;
+    let earned = 5 + (state.streak>=3?state.streak*2:0);
+    earnCoins(earned);
+    state.score += 10;
     state.streak++;
-    const coinEarned = 5 + (state.streak >= 5 ? 5 : 0) + (state.streak >= 10 ? 10 : 0);
-    earnCoins(coinEarned, btn.getBoundingClientRect().x, btn.getBoundingClientRect().y);
-    state.score += 10 + (state.streak >= 3 ? state.streak * 2 : 0);
-    if (state.streak >= 3) showToast(`🔥 ${state.streak}x Streak! +Bonus!`);
   } else {
     btn.classList.add('wrong');
-    allBtns[correct].classList.add('correct');
+    document.querySelectorAll('.option-btn')[correct].classList.add('correct');
     state.wrongCount++;
-    state.streak = 0;
-    state.wrongAnswers.push({
-      q: state.currentQ.q,  // already in selected language
-      yourAns: state.currentQ.opts[idx],
-      rightAns: state.currentQ.opts[correct]
-    });
+    state.streak=0;
+    state.wrongAnswers.push({q:state.currentQ.q, your:state.currentQ.opts[idx], correct:state.currentQ.opts[correct]});
   }
-
-  updateScoreRow();
-  setTimeout(nextQuestion, 1200);
+  updateScoreUI();
+  setTimeout(nextQuestion, 1000);
 }
-
-function updateScoreRow() {
-  document.getElementById('rightCount').textContent = state.rightCount;
-  document.getElementById('wrongCount').textContent = state.wrongCount;
-  document.getElementById('skipCount').textContent  = state.skipCount;
-  document.getElementById('liveScore').textContent  = state.score;
+function updateScoreUI(){
+  document.getElementById('rightCount').innerText = state.rightCount;
+  document.getElementById('wrongCount').innerText = state.wrongCount;
+  document.getElementById('skipCount').innerText = state.skipCount;
+  document.getElementById('liveScore').innerText = state.score;
+  let total = state.rightCount+state.wrongCount+state.skipCount;
+  if(state.mode==='timebound' && state.qCount>0){
+    let pct = (state.qIndex-1)/state.qCount*100;
+    document.getElementById('progressBar').style.width = pct+'%';
+  }
+  let qNumDisplay = state.mode==='timebound' ? `${state.qIndex}/${state.qCount}` : `Q${state.qIndex}`;
+  document.getElementById('qNum').innerText = qNumDisplay;
 }
-
-// ╔════════════════════════════════════════╗
-//   POWERUPS
-// ╚════════════════════════════════════════╝
-function usePowerup(type) {
-  const costs = { fiftyfifty: 20, skip: 10, freeze: 30, change: 15 };
-  const cost = costs[type];
-
-  if (!spendCoins(cost)) return;
-
-  document.getElementById('pu-' + type).disabled = true;
-
-  if (type === 'fiftyfifty') {
-    const correct = state.currentQ.ans;
-    const allBtns = document.querySelectorAll('.option-btn');
-    let removed = 0;
-    allBtns.forEach((btn, i) => {
-      if (i !== correct && removed < 2) {
-        btn.classList.add('faded');
-        btn.onclick = null;
-        removed++;
-      }
-    });
-    showToast('⚡ 50:50 — two options removed!');
-  }
-
-  else if (type === 'skip') {
+function usePowerup(type){
+  let cost = { fiftyfifty:20, skip:10, change:15 }[type];
+  if(!spendCoins(cost)) return;
+  if(type==='skip'){
     clearInterval(state.timerInterval);
-    state.skipCount++;
-    updateScoreRow();
-    showToast('⏭ Question skipped!');
-    setTimeout(nextQuestion, 500);
-  }
-
-  else if (type === 'freeze') {
-    state.isFrozen = true;
-    showToast('❄️ Timer frozen for 5 seconds!');
-    setTimeout(() => { state.isFrozen = false; }, 5000);
-  }
-
-  else if (type === 'change') {
+    state.skipCount++; updateScoreUI(); nextQuestion();
+  } else if(type==='change'){
     clearInterval(state.timerInterval);
-    if (state.questions.length === 0) {
-      showToast('No more questions to swap!');
-      return;
-    }
-    showToast('🔄 Question changed!');
     nextQuestion();
+  } else if(type==='fiftyfifty'){
+    let correctIdx = state.currentQ.ans;
+    let btns = document.querySelectorAll('.option-btn');
+    let wrongIdxs = [];
+    for(let i=0;i<btns.length;i++) if(i!==correctIdx) wrongIdxs.push(i);
+    wrongIdxs.sort(()=>0.5-Math.random());
+    for(let i=0;i<2 && i<wrongIdxs.length;i++) if(btns[wrongIdxs[i]]) btns[wrongIdxs[i]].remove();
   }
 }
-
-// ╔════════════════════════════════════════╗
-//   END GAME / FREE RUN
-// ╚════════════════════════════════════════╝
-function endFreeRun() { endGame(); }
-
-function endGame() {
+function endGame(){
   clearInterval(state.timerInterval);
-  const total = state.rightCount + state.wrongCount + state.skipCount;
-
-  document.getElementById('res-right').textContent  = state.rightCount;
-  document.getElementById('res-wrong').textContent  = state.wrongCount;
-  document.getElementById('res-skip').textContent   = state.skipCount;
-
-  const coinsEarned = state.rightCount * 5;
-  document.getElementById('res-coins').textContent  = '+' + coinsEarned;
-  earnCoins(coinsEarned);
-
-  document.getElementById('finalScore').textContent = state.score;
-if (state.isDaily) {
-  const today = getToday();
-
-  if (dailyData.lastDate !== today) {
-    earnCoins(30);
-    localStorage.setItem('qm_daily_date', today);
-    dailyData.lastDate = today;
-    showToast('🎯 Daily Quiz Reward: +30 coins');
-  }
-
-  state.isDaily = false;
-}
-  const pct = total > 0 ? state.rightCount / total : 0;
-  let emoji = '😐', title = 'Keep Practising!', sub = '';
-  if (pct >= 0.9) { emoji = '🏆'; title = 'Outstanding!'; sub = 'You are a Quiz Legend!'; }
-  else if (pct >= 0.7) { emoji = '🎉'; title = 'Great Job!'; sub = 'Almost there — keep going!'; }
-  else if (pct >= 0.5) { emoji = '👍'; title = 'Not Bad!'; sub = 'Practice more to improve!'; }
-  else { emoji = '😅'; title = 'Keep Trying!'; sub = 'Every attempt makes you stronger!'; }
-
-  document.getElementById('resultEmoji').textContent = emoji;
-  document.getElementById('resultTitle').textContent = title;
-  document.getElementById('resultSub').textContent = sub;
-
-  // Ring animation
-  const offset = 377 * (1 - pct);
-  setTimeout(() => {
-    document.getElementById('ringFill').style.strokeDashoffset = offset;
-  }, 200);
-
-  // Wrong answers
-  const wCard = document.getElementById('wrongAnswersCard');
-  if (state.wrongAnswers.length > 0) {
-    wCard.style.display = 'block';
-    const wList = document.getElementById('wrongList');
-    wList.innerHTML = state.wrongAnswers.map((w, i) => `
-      <div class="wrong-item" onclick="this.querySelector('.right-ans').style.display = this.querySelector('.right-ans').style.display === 'none' ? 'block' : 'none'">
-        <div class="q-text">${i+1}. ${w.q}</div>
-        <div class="your-ans">❌ Your answer: ${w.yourAns}</div>
-        <div class="right-ans" style="display:none">✅ Correct: ${w.rightAns}</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:4px">Tap to reveal correct answer</div>
-      </div>
-    `).join('');
-  } else {
-    wCard.style.display = 'none';
-  }
-
+  let earned = state.rightCount*5;
+  earnCoins(earned);
+  document.getElementById('res-right').innerText = state.rightCount;
+  document.getElementById('res-wrong').innerText = state.wrongCount;
+  document.getElementById('res-skip').innerText = state.skipCount;
+  document.getElementById('res-coins').innerText = earned;
+  document.getElementById('finalScore').innerText = state.score;
+  let wrongDiv = document.getElementById('wrongAnswersCard');
+  if(state.wrongAnswers.length){
+    wrongDiv.style.display='block';
+    document.getElementById('wrongList').innerHTML = state.wrongAnswers.map(w=>`<div>❌ ${w.q}<br><span style="font-size:12px;">Your: ${w.your} | Correct: ${w.correct}</span></div>`).join('');
+  } else wrongDiv.style.display='none';
   showScreen('screen-result');
 }
+function goHome(){ showScreen('screen-mode'); state.category=null; state.mode=null; document.getElementById('startBtn').style.display='none'; }
+function playAgain(){ goHome(); }
 
-// ╔════════════════════════════════════════╗
-//   NAVIGATION
-// ╚════════════════════════════════════════╝
-function playAgain() {
-  state.category = null;
-  state.mode = null;
-  document.querySelectorAll('.cat-card').forEach(c => c.style.borderColor = '');
-  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('startBtn').style.display = 'none';
-  document.getElementById('timeboundSettings').style.display = 'none';
-  showScreen('screen-mode');
+// -------------------------- DAILY QUIZ --------------------------
+async function showDailyQuiz(){
+  let today = new Date().toISOString().slice(0,10);
+  let lastDaily = localStorage.getItem('lastDaily');
+  if(lastDaily === today){
+    showToast("You already completed today's Daily Quiz! Come back tomorrow.");
+    return;
+  }
+  let suffix = state.language==='English'?'en':state.language==='Hindi'?'hi':'mr';
+  let snap;
+  try {
+    snap = await db.collection('questions').limit(5).get();
+  } catch(e){ snap = { empty: true }; }
+  let dailyQs = [];
+  if(!snap.empty){
+    snap.forEach(doc=>{
+      let d = doc.data();
+      let q = d[`question_${suffix}`] || d.question_en;
+      let opts = d[`options_${suffix}`] || d.options;
+      if(q && opts) dailyQs.push({ q, opts, ans: d.answer });
+    });
+  }
+  if(dailyQs.length<3) dailyQs = getDemoQuestions('GK', suffix).slice(0,5);
+  let scoreDaily = 0;
+  for(let i=0;i<dailyQs.length;i++){
+    let q = dailyQs[i];
+    let userAns = prompt(`Daily Quiz Q${i+1}/${dailyQs.length}\n${q.q}\nOptions:\n${q.opts.map((o,idx)=>`${idx+1}. ${o}`).join('\n')}\n\nType number 1-${q.opts.length}`);
+    let selected = parseInt(userAns)-1;
+    if(selected===q.ans) scoreDaily++;
+  }
+  if(scoreDaily >=3){
+    earnCoins(50);
+    localStorage.setItem('lastDaily', today);
+    showToast(`Daily Quiz done! You earned 50 coins!`);
+  } else {
+    showToast(`You got ${scoreDaily}/5 correct. No coins this time.`);
+  }
 }
-
-function goHome() {
-  showScreen('screen-mode');
-}
+// initial render
+updateCoinDisplay();
+renderCategories();
 </script>
-<div style="position:fixed;bottom:20px;left:16px;z-index:100;">
-  <button class="btn btn-pink" onclick="openDailyPopup()">🎯 Daily</button>
-</div>
 </body>
 </html>
