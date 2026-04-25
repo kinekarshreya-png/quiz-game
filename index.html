@@ -13,7 +13,6 @@
       color: #e8eaf6;
       min-height: 100vh;
     }
-    /* background effect */
     .bg { position: fixed; inset: 0; background: radial-gradient(circle at 20% 30%, #0f0f2a, #050510); z-index: -2; }
     .bg::after { content: ''; position: absolute; inset: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.05"><path fill="none" stroke="%2300e5ff" stroke-width="0.5" d="M10 10 L90 10 M10 30 L90 30 M10 50 L90 50 M10 70 L90 70 M10 90 L90 90 M10 10 L10 90 M30 10 L30 90 M50 10 L50 90 M70 10 L70 90 M90 10 L90 90"/></svg>'); background-size: 30px 30px; }
     .container { max-width: 550px; margin: 0 auto; padding: 20px 16px 40px; position: relative; z-index: 1; }
@@ -41,20 +40,20 @@
     .settings select { background: rgba(255,255,255,0.1); border: none; padding: 8px 12px; border-radius: 12px; color: white; margin: 0 6px; }
     .btn { width: 100%; padding: 14px; border-radius: 40px; font-weight: 800; border: none; cursor: pointer; background: linear-gradient(135deg, #00e5ff, #0097a7); color: #000; margin-top: 12px; }
     .btn-daily { background: linear-gradient(135deg, #ffd700, #f57f17); color: #000; margin-top: 8px; }
-    /* modal */
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; visibility: hidden; opacity: 0; transition: 0.2s; }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; visibility: hidden; opacity: 0; transition: 0.2s; }
     .modal.active { visibility: visible; opacity: 1; }
-    .modal-content { background: #151530; border-radius: 32px; padding: 24px; max-width: 90%; width: 400px; text-align: center; border: 1px solid rgba(0,229,255,0.3); }
+    .modal-content { background: #151530; border-radius: 32px; padding: 24px; max-width: 90%; width: 450px; text-align: center; border: 1px solid rgba(0,229,255,0.3); max-height: 80vh; overflow-y: auto; }
     .quiz-area { display: none; }
     .quiz-area.active { display: block; }
-    .option-btn { display: block; width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; margin-bottom: 8px; text-align: left; font-weight: 600; cursor: pointer; }
+    .option-btn { display: block; width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; margin-bottom: 8px; text-align: left; font-weight: 600; cursor: pointer; transition: 0.1s; }
     .option-btn.correct { background: rgba(0,255,136,0.2); border-color: #00ff88; }
     .option-btn.wrong { background: rgba(255,68,68,0.2); border-color: #ff4444; }
-    .powerup-bar { display: flex; gap: 8px; margin: 12px 0; }
-    .powerup { background: rgba(255,255,255,0.08); border-radius: 40px; padding: 6px; text-align: center; flex: 1; font-size: 12px; cursor: pointer; }
+    .powerup-bar { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+    .powerup { background: rgba(255,255,255,0.08); border-radius: 40px; padding: 8px 6px; text-align: center; flex: 1; font-size: 12px; cursor: pointer; font-weight: bold; }
     .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1f1f3a; padding: 10px 20px; border-radius: 40px; font-weight: bold; z-index: 1100; opacity: 0; transition: 0.2s; pointer-events: none; }
     .toast.show { opacity: 1; }
-    @media (max-width: 480px) { .cat-grid { gap: 8px; } .cat-name { font-size: 12px; } }
+    .streak-badge { background: #ffd700; color: #000; border-radius: 20px; padding: 2px 10px; font-size: 12px; display: inline-block; margin-left: 8px; }
+    @media (max-width: 480px) { .cat-grid { gap: 8px; } .cat-name { font-size: 12px; } .powerup { font-size: 10px; } }
   </style>
 </head>
 <body>
@@ -77,7 +76,7 @@
     <button class="btn btn-daily" onclick="guestLogin()">👤 Continue as Guest</button>
   </div>
 
-  <!-- MAIN DASHBOARD (after login/guest) -->
+  <!-- MAIN DASHBOARD -->
   <div id="dashboard" style="display: none;">
     <!-- Language -->
     <div class="card">
@@ -115,12 +114,21 @@
     <button class="btn btn-daily" onclick="openDailyQuiz()">📅 DAILY QUIZ</button>
   </div>
 
-  <!-- QUIZ SCREEN (hidden initially) -->
+  <!-- QUIZ SCREEN -->
   <div id="quizScreen" style="display: none;">
     <div class="card">
-      <div style="display: flex; justify-content: space-between;"><span id="qCounter">Q1</span><span id="catName"></span></div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="qCounter">Q1</span>
+        <span id="catName"></span>
+        <span id="streakDisplay" class="streak-badge" style="display: none;">🔥 0</span>
+      </div>
       <div id="progressBar" style="height: 4px; background: #333; border-radius: 4px; margin: 12px 0;"><div id="progressFill" style="width: 0%; height: 100%; background: #00e5ff; border-radius: 4px;"></div></div>
-      <div style="display: flex; gap: 12px; margin-bottom: 16px;"><div>✅ <span id="rightCount">0</span></div><div>❌ <span id="wrongCount">0</span></div><div>⏭️ <span id="skipCount">0</span></div><div>🏆 <span id="scoreCount">0</span></div></div>
+      <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+        <div>✅ <span id="rightCount">0</span></div>
+        <div>❌ <span id="wrongCount">0</span></div>
+        <div>⏭️ <span id="skipCount">0</span></div>
+        <div>🏆 <span id="scoreCount">0</span></div>
+      </div>
       <div id="timerDisplay" style="text-align: center; font-size: 24px; font-weight: bold; margin: 8px 0; display: none;"></div>
       <div id="questionText" style="font-size: 20px; font-weight: 800; margin: 12px 0;"></div>
       <div id="optionsContainer"></div>
@@ -128,6 +136,7 @@
         <div class="powerup" onclick="usePowerup('fifty')">⚡ 50:50 (20🪙)</div>
         <div class="powerup" onclick="usePowerup('skip')">⏭ Skip (10🪙)</div>
         <div class="powerup" onclick="usePowerup('change')">🔄 Change (15🪙)</div>
+        <div class="powerup" onclick="usePowerup('double')">💰 Double (25🪙)</div>
       </div>
       <button class="btn" style="background: #ff5555;" onclick="endQuiz()">🏁 End Quiz</button>
     </div>
@@ -148,7 +157,7 @@
   <div class="modal-content">
     <h3>📅 Daily Quiz</h3>
     <div id="dailyStatus"></div>
-    <div id="dailyQuestions"></div>
+    <div id="dailyQuestions" style="max-height: 400px; overflow-y: auto; margin: 12px 0;"></div>
     <button class="btn" id="closeDailyBtn" onclick="closeDailyModal()">Close</button>
   </div>
 </div>
@@ -180,7 +189,7 @@ let selectedCategory = null;
 let selectedMode = null;
 let currentLang = "English";
 let currentQuestions = [], currentQuestionObj = null, qIndex = 0, right=0, wrong=0, skipped=0, score=0, streak=0, timerInterval = null, timeLeft = 0;
-let powerupUsed = false;
+let powerupActive = { doubleCoins: false };
 
 // 10 categories (3 free, 7 locked)
 const allCategories = [
@@ -261,7 +270,6 @@ function onLoginSuccess(user) {
   });
 }
 function toggleMenu() {
-  // simple logout
   if(confirm("Sign out?")) {
     auth.signOut();
     currentUser = null;
@@ -366,6 +374,7 @@ async function fetchQuestions(category, lang) {
 async function startQuiz() {
   if(!selectedCategory || !selectedMode) return;
   right=0; wrong=0; skipped=0; score=0; streak=0; qIndex=0;
+  powerupActive.doubleCoins = false;
   const qCount = selectedMode === 'timebound' ? parseInt(document.getElementById('qCountSel').value) : 99999;
   const questionsAll = await fetchQuestions(selectedCategory, currentLang);
   currentQuestions = questionsAll.sort(() => Math.random() - 0.5).slice(0, qCount);
@@ -381,6 +390,13 @@ function updateQuizUI() {
   document.getElementById('wrongCount').innerText = wrong;
   document.getElementById('skipCount').innerText = skipped;
   document.getElementById('scoreCount').innerText = score;
+  const streakElem = document.getElementById('streakDisplay');
+  if(streak >= 3) {
+    streakElem.style.display = 'inline-block';
+    streakElem.innerText = `🔥 ${streak}`;
+  } else {
+    streakElem.style.display = 'none';
+  }
   if(selectedMode === 'timebound' && currentQuestions.length) {
     let percent = (qIndex / currentQuestions.length) * 100;
     document.getElementById('progressFill').style.width = percent + '%';
@@ -439,7 +455,13 @@ function checkAnswer(idx, btn) {
   if(idx === correct) {
     btn.classList.add('correct');
     right++;
-    let earn = 5 + (streak>=3 ? streak*2 : 0);
+    let earn = 5;
+    if(streak >= 3) earn += streak * 2;
+    if(powerupActive.doubleCoins) {
+      earn *= 2;
+      showToast("💰 Double coins active! +" + earn);
+      powerupActive.doubleCoins = false;
+    }
     coins += earn;
     score += 10;
     streak++;
@@ -448,21 +470,27 @@ function checkAnswer(idx, btn) {
   } else {
     btn.classList.add('wrong');
     allBtns[correct].classList.add('correct');
+    // Show correct answer in toast
+    const correctText = currentQuestionObj.opts[correct];
+    showToast(`❌ Wrong! Correct answer: ${correctText}`);
     wrong++;
     streak=0;
   }
   updateQuizUI();
   qIndex++;
-  setTimeout(() => nextQuestion(), 1000);
+  setTimeout(() => nextQuestion(), 1200);
 }
 
 function usePowerup(type) {
-  if(powerupUsed) return;
-  let cost = type==='fifty'?20 : type==='skip'?10 : 15;
+  let cost = 0;
+  if(type === 'fifty') cost = 20;
+  else if(type === 'skip') cost = 10;
+  else if(type === 'change') cost = 15;
+  else if(type === 'double') cost = 25;
   if(coins < cost) { showToast(`Need ${cost} coins`); return; }
   coins -= cost;
   updateCoinUI();
-  powerupUsed = true;
+  saveUserData();
   if(type === 'skip') {
     if(timerInterval) clearInterval(timerInterval);
     skipped++;
@@ -479,8 +507,11 @@ function usePowerup(type) {
     for(let i=0; i<btns.length; i++) if(i !== correctIdx) toRemove.push(i);
     toRemove.sort(()=>0.5-Math.random());
     for(let i=0; i<2 && i<toRemove.length; i++) btns[toRemove[i]].remove();
+    showToast("50:50 activated!");
+  } else if(type === 'double') {
+    powerupActive.doubleCoins = true;
+    showToast("Double coins for next correct answer!");
   }
-  setTimeout(()=> powerupUsed=false, 500);
 }
 
 function endQuiz() {
@@ -494,8 +525,9 @@ function endQuiz() {
   document.getElementById('finalWrong').innerText = wrong;
   document.getElementById('finalSkip').innerText = skipped;
   document.getElementById('coinsEarned').innerText = earned;
-  // wrong answers list
-  // not storing full wrong answers here for brevity, but can be added
+  // show wrong answers review
+  // we haven't stored wrong answers, but we can add simple message
+  document.getElementById('wrongList').innerHTML = "<p>Review answers by playing again!</p>";
   document.getElementById('resultScreen').style.display = 'block';
   document.getElementById('quizScreen').style.display = 'none';
 }
@@ -506,82 +538,92 @@ function backToDashboard() {
   renderCategories();
   checkStartEnabled();
 }
-// ---------- DAILY QUIZ (popup with countdown) ----------
-function openDailyQuiz() {
+
+// ---------- DAILY QUIZ (5 random questions, scrollable, countdown) ----------
+async function openDailyQuiz() {
   const modal = document.getElementById('dailyModal');
   const statusDiv = document.getElementById('dailyStatus');
   const questionsDiv = document.getElementById('dailyQuestions');
   const lastDaily = localStorage.getItem('dailyQuizDate');
   const today = new Date().toISOString().slice(0,10);
   if(lastDaily === today) {
-    // countdown until next reset (midnight UTC)
     const now = new Date();
     const midnight = new Date(now);
-    midnight.setUTCHours(24,0,0,0);
+    midnight.setHours(24,0,0,0);
     const diff = Math.floor((midnight - now) / 1000);
     const hours = Math.floor(diff/3600);
     const mins = Math.floor((diff%3600)/60);
-    statusDiv.innerHTML = `✅ You already played today! Next quiz available in ${hours}h ${mins}m.`;
-    questionsDiv.style.display = 'none';
+    statusDiv.innerHTML = `✅ Already played today! Next quiz in ${hours}h ${mins}m.`;
+    questionsDiv.innerHTML = '';
     document.getElementById('closeDailyBtn').style.display = 'block';
   } else {
-    statusDiv.innerHTML = "🎯 5 random questions, earn 50 coins if you get 3+ correct!";
-    questionsDiv.style.display = 'block';
-    // load 5 random questions from any category (or use fallback)
-    fetchRandomQuestions(5).then(qs => {
-      questionsDiv.innerHTML = '';
-      let answers = [];
-      qs.forEach((q, i) => {
-        let div = document.createElement('div');
-        div.style.margin = '12px 0';
-        div.innerHTML = `<strong>${i+1}. ${q.q}</strong><br>${q.opts.map((opt,idx)=>`<label><input type="radio" name="q${i}" value="${idx}"> ${opt}</label><br>`).join('')}`;
-        questionsDiv.appendChild(div);
-        answers.push(q.ans);
+    statusDiv.innerHTML = "🎯 5 random questions from all categories. Get 3+ correct to earn 50 coins!";
+    // fetch 5 random questions from any category
+    let allQuestions = [];
+    try {
+      const snap = await db.collection('questions').limit(20).get();
+      snap.forEach(d => {
+        let data = d.data();
+        let suffix = currentLang==='English'?'en':currentLang==='Hindi'?'hi':'mr';
+        let qText = data[`question_${suffix}`] || data.question_en;
+        let opts = data[`options_${suffix}`] || data.options_en;
+        if(qText && opts) allQuestions.push({ q: qText, opts, ans: data.answer });
       });
-      const submitBtn = document.createElement('button');
-      submitBtn.className = 'btn';
-      submitBtn.innerText = 'Submit Daily Quiz';
-      submitBtn.onclick = () => {
-        let correctCount = 0;
-        for(let i=0; i<qs.length; i++) {
-          let selected = document.querySelector(`input[name="q${i}"]:checked`);
-          if(selected && parseInt(selected.value) === answers[i]) correctCount++;
-        }
-        if(correctCount >= 3) {
-          coins += 50;
-          updateCoinUI();
-          saveUserData();
-          localStorage.setItem('dailyQuizDate', today);
-          showToast("🎉 Great! You earned 50 coins!");
-        } else {
-          showToast(`You got ${correctCount}/5. Need 3+ to earn coins.`);
-        }
-        closeDailyModal();
-      };
-      questionsDiv.appendChild(submitBtn);
-      document.getElementById('closeDailyBtn').style.display = 'none';
+    } catch(e) {}
+    if(allQuestions.length < 5) {
+      // fallback
+      allQuestions = [
+        { q: "Sample question 1", opts: ["A","B","C","D"], ans: 0 },
+        { q: "Sample question 2", opts: ["A","B","C","D"], ans: 1 },
+        { q: "Sample question 3", opts: ["A","B","C","D"], ans: 2 },
+        { q: "Sample question 4", opts: ["A","B","C","D"], ans: 3 },
+        { q: "Sample question 5", opts: ["A","B","C","D"], ans: 0 }
+      ];
+    }
+    let dailyQs = allQuestions.sort(()=>Math.random()-0.5).slice(0,5);
+    questionsDiv.innerHTML = '';
+    let answers = [];
+    dailyQs.forEach((q, i) => {
+      let div = document.createElement('div');
+      div.style.margin = '12px 0';
+      div.style.textAlign = 'left';
+      div.innerHTML = `<strong>${i+1}. ${q.q}</strong><br>`;
+      q.opts.forEach((opt, idx) => {
+        div.innerHTML += `<label style="display: block; margin: 4px 0;"><input type="radio" name="dailyQ${i}" value="${idx}"> ${opt}</label>`;
+      });
+      questionsDiv.appendChild(div);
+      answers.push(q.ans);
     });
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'btn';
+    submitBtn.innerText = 'Submit Daily Quiz';
+    submitBtn.onclick = () => {
+      let correctCount = 0;
+      for(let i=0; i<dailyQs.length; i++) {
+        let selected = document.querySelector(`input[name="dailyQ${i}"]:checked`);
+        if(selected && parseInt(selected.value) === answers[i]) correctCount++;
+      }
+      if(correctCount >= 3) {
+        coins += 50;
+        updateCoinUI();
+        saveUserData();
+        localStorage.setItem('dailyQuizDate', today);
+        showToast("🎉 Great! You earned 50 coins!");
+      } else {
+        showToast(`You got ${correctCount}/5. Need 3+ to earn coins.`);
+      }
+      closeDailyModal();
+    };
+    questionsDiv.appendChild(submitBtn);
+    document.getElementById('closeDailyBtn').style.display = 'block';
   }
   modal.classList.add('active');
-}
-async function fetchRandomQuestions(limit) {
-  try {
-    const snap = await db.collection('questions').limit(limit).get();
-    let qs = [];
-    snap.forEach(d => {
-      let data = d.data();
-      let qText = data[`question_${currentLang==='English'?'en':currentLang==='Hindi'?'hi':'mr'}`] || data.question_en;
-      let opts = data[`options_${currentLang==='English'?'en':currentLang==='Hindi'?'hi':'mr'}`] || data.options_en;
-      if(qText && opts) qs.push({ q: qText, opts, ans: data.answer });
-    });
-    if(qs.length) return qs;
-  } catch(e) {}
-  return Array(limit).fill().map((_,i) => ({ q: `Sample daily question ${i+1}`, opts: ["A","B","C","D"], ans: 0 }));
 }
 function closeDailyModal() {
   document.getElementById('dailyModal').classList.remove('active');
 }
-// initial render of categories
+
+// initial render
 renderCategories();
 </script>
 </body>
