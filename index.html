@@ -1,238 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Quiz Master - Daily Quiz & Unlockable Categories</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #0a0a1a;
-  --card: rgba(255,255,255,0.05);
-  --border: rgba(255,255,255,0.1);
-  --cyan: #00e5ff;
-  --gold: #ffd700;
-  --pink: #ff4da6;
-  --green: #00ff88;
-  --red: #ff4444;
-  --purple: #b44bff;
-  --text: #e8eaf6;
-  --sub: #9fa8da;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Nunito', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-.bg-layer { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
-.bg-grid {
-  position: absolute; inset: 0;
-  background-image: linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: gridShift 20s linear infinite;
-}
-@keyframes gridShift { from { transform: translateY(0); } to { transform: translateY(40px); } }
-.orb {
-  position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18;
-  animation: orbFloat 8s ease-in-out infinite;
-}
-.orb1 { width: 500px; height: 500px; background: var(--cyan); top: -150px; left: -100px; }
-.orb2 { width: 400px; height: 400px; background: var(--pink); bottom: -100px; right: -80px; animation-delay: 3s; }
-.orb3 { width: 300px; height: 300px; background: var(--purple); top: 40%; left: 50%; animation-delay: 5s; }
-@keyframes orbFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-30px) scale(1.05); } }
-
-#app { position: relative; z-index: 1; max-width: 500px; margin: 0 auto; padding: 20px 16px 40px; min-height: 100vh; }
-.top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px; }
-.logo {
-  font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 900;
-  background: linear-gradient(90deg, var(--cyan), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.coin-display { display: flex; align-items: center; gap: 6px; background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.3); border-radius: 30px; padding: 6px 14px; font-weight: 800; color: var(--gold); }
-.screen { display: none; animation: fadeUp 0.4s ease; }
-.screen.active { display: block; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.card {
-  background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 28px 24px; margin-bottom: 16px;
-  backdrop-filter: blur(12px); position: relative; overflow: hidden;
-}
-.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
-.section-title { font-family: 'Orbitron', monospace; font-size: 13px; letter-spacing: 3px; color: var(--sub); text-transform: uppercase; margin-bottom: 18px; }
-h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border: none; border-radius: 14px;
-  font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s;
-}
-.btn-cyan { background: linear-gradient(135deg, var(--cyan), #0097a7); color: #000; }
-.btn-pink { background: linear-gradient(135deg, var(--pink), #c2185b); color: #fff; }
-.btn-gold { background: linear-gradient(135deg, var(--gold), #f57f17); color: #000; }
-.btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
-.btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-.btn-full { width: 100%; margin-bottom: 10px; }
-
-.lang-grid { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.lang-btn {
-  background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 40px; padding: 8px 16px;
-  cursor: pointer; font-weight: 700; font-size: 14px; transition: all 0.2s;
-}
-.lang-btn:hover, .lang-btn.selected { border-color: var(--cyan); background: rgba(0,229,255,0.1); color: var(--cyan); }
-
-.cat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
-.cat-card {
-  background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 18px; padding: 16px 8px; text-align: center;
-  cursor: pointer; transition: all 0.3s; position: relative;
-}
-.cat-card.locked { opacity: 0.7; filter: grayscale(0.2); }
-.cat-card.locked::after { content: "🔒"; position: absolute; top: 10px; right: 12px; font-size: 16px; }
-.cat-icon { font-size: 32px; margin-bottom: 6px; }
-.cat-name { font-weight: 800; font-size: 14px; }
-
-.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-.mode-card {
-  border-radius: 18px; padding: 18px 12px; text-align: center; cursor: pointer; transition: all 0.3s;
-  border: 2px solid transparent;
-}
-.mode-card.freerun { background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(0,229,255,0.04)); border-color: rgba(0,229,255,0.3); }
-.mode-card.timebound { background: linear-gradient(135deg, rgba(255,77,166,0.12), rgba(255,77,166,0.04)); border-color: rgba(255,77,166,0.3); }
-.mode-card.selected { border-width: 2px; }
-.mode-card.freerun.selected { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0,229,255,0.2); }
-.mode-card.timebound.selected { border-color: var(--pink); box-shadow: 0 0 20px rgba(255,77,166,0.2); }
-.mode-icon { font-size: 32px; margin-bottom: 6px; }
-.mode-name { font-weight: 800; font-size: 15px; }
-.mode-desc { font-size: 10px; color: var(--sub); margin-top: 4px; }
-
-.quiz-header { display: flex; justify-content: space-between; margin-bottom: 16px; }
-.progress-bar-wrap { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
-.progress-bar { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--pink)); transition: width 0.4s; }
-.score-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-.stat-chip { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 8px; text-align: center; }
-.stat-chip .val { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700; }
-.stat-chip .lbl { font-size: 9px; color: var(--sub); }
-.option-btn {
-  display: flex; gap: 12px; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1.5px solid var(--border); border-radius: 14px;
-  cursor: pointer; width: 100%; margin-bottom: 8px; font-weight: 700;
-}
-.option-btn.correct { border-color: var(--green); background: rgba(0,255,136,0.12); color: var(--green); }
-.option-btn.wrong { border-color: var(--red); background: rgba(255,68,68,0.12); color: var(--red); }
-.powerups { display: flex; justify-content: space-around; gap: 8px; margin: 14px 0; }
-.powerup-btn {
-  background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 14px; padding: 8px 12px;
-  text-align: center; cursor: pointer; font-size: 12px; font-weight: 700; flex: 1;
-}
-.powerup-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.toast {
-  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
-  background: rgba(0,0,0,0.85); border: 1px solid var(--border); border-radius: 14px; padding: 10px 20px;
-  z-index: 200; transition: transform 0.3s; white-space: nowrap;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-.user-avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--cyan); object-fit: cover; cursor: pointer; }
-.user-menu {
-  position: fixed; top: 64px; right: 16px; background: #15152b; border: 1px solid var(--border);
-  border-radius: 16px; padding: 8px; z-index: 50; min-width: 180px; display: none;
-}
-.user-menu.open { display: block; }
-.user-menu-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; }
-.user-menu-item:hover { background: rgba(255,255,255,0.1); }
-.ad-placeholder {
-  background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); border-radius: 12px;
-  padding: 10px; text-align: center; font-size: 12px; margin: 12px 0; cursor: pointer;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Quizania - QuizChallenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #0a0a1a;
+      color: #e8eaf6;
+      min-height: 100vh;
+    }
+    /* background effect */
+    .bg { position: fixed; inset: 0; background: radial-gradient(circle at 20% 30%, #0f0f2a, #050510); z-index: -2; }
+    .bg::after { content: ''; position: absolute; inset: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.05"><path fill="none" stroke="%2300e5ff" stroke-width="0.5" d="M10 10 L90 10 M10 30 L90 30 M10 50 L90 50 M10 70 L90 70 M10 90 L90 90 M10 10 L10 90 M30 10 L30 90 M50 10 L50 90 M70 10 L70 90 M90 10 L90 90"/></svg>'); background-size: 30px 30px; }
+    .container { max-width: 550px; margin: 0 auto; padding: 20px 16px 40px; position: relative; z-index: 1; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .logo { font-family: 'Orbitron', monospace; font-size: 26px; font-weight: 900; background: linear-gradient(90deg, #00e5ff, #ff4da6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .coin-badge { background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); border-radius: 40px; padding: 6px 16px; font-weight: 800; color: #ffd700; display: flex; align-items: center; gap: 6px; }
+    .avatar { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #00e5ff; object-fit: cover; cursor: pointer; }
+    .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border-radius: 28px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+    .section-title { font-family: 'Orbitron', monospace; font-size: 12px; letter-spacing: 2px; color: #9fa8da; margin-bottom: 12px; }
+    h3 { font-size: 18px; margin-bottom: 12px; }
+    .lang-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .lang-btn { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 40px; padding: 8px 18px; cursor: pointer; font-weight: 700; transition: all 0.2s; }
+    .lang-btn.selected, .lang-btn:hover { border-color: #00e5ff; background: rgba(0,229,255,0.15); color: #00e5ff; }
+    .cat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+    .cat-card { background: rgba(255,255,255,0.04); border-radius: 20px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; border: 1.5px solid transparent; position: relative; }
+    .cat-card.locked { opacity: 0.7; }
+    .cat-card.locked::after { content: "🔒"; position: absolute; top: 8px; right: 12px; font-size: 14px; }
+    .cat-card.selected { border-color: #00e5ff; background: rgba(0,229,255,0.1); }
+    .cat-icon { font-size: 32px; }
+    .cat-name { font-weight: 800; margin-top: 6px; }
+    .mode-row { display: flex; gap: 12px; margin: 12px 0; }
+    .mode-option { flex: 1; background: rgba(255,255,255,0.04); border-radius: 20px; padding: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; }
+    .mode-option.selected { border-color: #00e5ff; background: rgba(0,229,255,0.1); }
+    .settings { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 12px; margin-top: 12px; display: none; }
+    .settings select { background: rgba(255,255,255,0.1); border: none; padding: 8px 12px; border-radius: 12px; color: white; margin: 0 6px; }
+    .btn { width: 100%; padding: 14px; border-radius: 40px; font-weight: 800; border: none; cursor: pointer; background: linear-gradient(135deg, #00e5ff, #0097a7); color: #000; margin-top: 12px; }
+    .btn-daily { background: linear-gradient(135deg, #ffd700, #f57f17); color: #000; margin-top: 8px; }
+    /* modal */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; visibility: hidden; opacity: 0; transition: 0.2s; }
+    .modal.active { visibility: visible; opacity: 1; }
+    .modal-content { background: #151530; border-radius: 32px; padding: 24px; max-width: 90%; width: 400px; text-align: center; border: 1px solid rgba(0,229,255,0.3); }
+    .quiz-area { display: none; }
+    .quiz-area.active { display: block; }
+    .option-btn { display: block; width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; margin-bottom: 8px; text-align: left; font-weight: 600; cursor: pointer; }
+    .option-btn.correct { background: rgba(0,255,136,0.2); border-color: #00ff88; }
+    .option-btn.wrong { background: rgba(255,68,68,0.2); border-color: #ff4444; }
+    .powerup-bar { display: flex; gap: 8px; margin: 12px 0; }
+    .powerup { background: rgba(255,255,255,0.08); border-radius: 40px; padding: 6px; text-align: center; flex: 1; font-size: 12px; cursor: pointer; }
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1f1f3a; padding: 10px 20px; border-radius: 40px; font-weight: bold; z-index: 1100; opacity: 0; transition: 0.2s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    @media (max-width: 480px) { .cat-grid { gap: 8px; } .cat-name { font-size: 12px; } }
+  </style>
 </head>
 <body>
-<div class="bg-layer"><div class="bg-grid"></div><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
-<div class="toast" id="toast"></div>
-<div id="app">
-  <div class="user-menu" id="userMenu"><div class="user-menu-item" onclick="logout()">🚪 Sign Out</div></div>
+<div class="bg"></div>
+<div class="container" id="app">
   <div class="top-bar">
-    <div class="logo">⚡ QUIZ MASTER</div>
-    <div style="display:flex;gap:12px;align-items:center;">
-      <div class="coin-display">🪙 <span id="coinCount">0</span></div>
-      <div id="userAvatarWrap" style="display:none;" onclick="toggleUserMenu()"></div>
+    <div class="logo">⚡ QUIZANIA</div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div class="coin-badge">🪙 <span id="coinsDisplay">0</span></div>
+      <div id="avatarWrap" style="display: none;"><img class="avatar" id="avatarImg" src="" onclick="toggleMenu()"></div>
     </div>
   </div>
 
   <!-- LOGIN SCREEN -->
-  <div class="screen" id="screen-login">
-    <div style="text-align:center; margin:40px 0 20px;"><div style="font-size:70px;">🏆</div><h1>QUIZ MASTER</h1><p style="color:var(--sub);">Daily Quiz · Unlock Categories · Earn Coins</p></div>
-    <div class="card"><button class="btn btn-cyan btn-full" onclick="login()">🔐 Sign in with Google</button><button class="btn btn-ghost btn-full" onclick="guestLogin()">👤 Guest Mode</button></div>
+  <div id="loginScreen" class="card" style="text-align: center;">
+    <div style="font-size: 64px;">🏆</div>
+    <h2>Quizania</h2>
+    <p>Challenge your knowledge, unlock categories, earn coins!</p>
+    <button class="btn" style="background: #4285f4; color: white; margin-top: 20px;" onclick="loginWithGoogle()">🔐 Sign in with Google</button>
+    <button class="btn btn-daily" onclick="guestLogin()">👤 Continue as Guest</button>
   </div>
 
-  <!-- LANGUAGE (ONLY 3) -->
-  <div class="screen" id="screen-language">
-    <div class="card"><p class="section-title">Step 1</p><h2>🌐 Choose Language</h2>
-      <div class="lang-grid">
-        <div class="lang-btn selected" onclick="selectLang('English',this)">🇬🇧 English</div>
-        <div class="lang-btn" onclick="selectLang('Hindi',this)">🇮🇳 हिन्दी</div>
-        <div class="lang-btn" onclick="selectLang('Marathi',this)">🇮🇳 मराठी</div>
+  <!-- MAIN DASHBOARD (after login/guest) -->
+  <div id="dashboard" style="display: none;">
+    <!-- Language -->
+    <div class="card">
+      <div class="section-title">🌐 LANGUAGE</div>
+      <div class="lang-group">
+        <div class="lang-btn selected" data-lang="English" onclick="setLanguage('English',this)">🇬🇧 English</div>
+        <div class="lang-btn" data-lang="Hindi" onclick="setLanguage('Hindi',this)">🇮🇳 हिन्दी</div>
+        <div class="lang-btn" data-lang="Marathi" onclick="setLanguage('Marathi',this)">🇮🇳 मराठी</div>
       </div>
-      <button class="btn btn-cyan btn-full" style="margin-top:20px;" onclick="goToCategory()">Next →</button>
     </div>
-  </div>
 
-  <!-- CATEGORY with 10 items (3 unlocked, 7 locked) -->
-  <div class="screen" id="screen-category">
-    <div class="card"><p class="section-title">Step 2</p><h2>📚 Choose Category</h2>
-      <div class="cat-grid" id="categoryGrid"></div>
-      <button class="btn btn-cyan btn-full" id="catNextBtn" style="display:none;" onclick="goToMode()">Next →</button>
+    <!-- Categories -->
+    <div class="card">
+      <div class="section-title">📚 CATEGORIES</div>
+      <div id="categoryGrid" class="cat-grid"></div>
     </div>
-  </div>
 
-  <!-- MODE + QUIZ SETUP -->
-  <div class="screen" id="screen-mode">
-    <div class="card"><p class="section-title">Game Mode</p>
-      <div class="mode-grid">
-        <div class="mode-card freerun" onclick="selectMode('freerun',this)"><div class="mode-icon">♾️</div><div class="mode-name">Free Run</div><div class="mode-desc">Endless, no timer</div></div>
-        <div class="mode-card timebound" onclick="selectMode('timebound',this)"><div class="mode-icon">⏱️</div><div class="mode-name">Time Bound</div><div class="mode-desc">10-30 questions, timer</div></div>
+    <!-- Mode -->
+    <div class="card">
+      <div class="section-title">🎮 GAME MODE</div>
+      <div class="mode-row">
+        <div class="mode-option" data-mode="freerun" onclick="setMode('freerun',this)">♾️ Free Run<br><span style="font-size: 12px;">Endless</span></div>
+        <div class="mode-option" data-mode="timebound" onclick="setMode('timebound',this)">⏱️ Time Bound<br><span style="font-size: 12px;">Fixed questions</span></div>
       </div>
-      <div id="timeboundSettings" style="display:none; margin-top:12px;">
-        <div>Questions: <select id="qCountSelect"><option>10</option><option>20</option><option>30</option></select></div>
-        <div style="margin-top:8px;">Time per Q: <select id="timeSelect"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
+      <div id="timeSettings" class="settings">
+        <label>Questions:</label>
+        <select id="qCountSel"><option>10</option><option>20</option><option>30</option></select>
+        <label>Time/Q:</label>
+        <select id="timePerQSel"><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
       </div>
-      <button class="btn btn-pink btn-full" id="startBtn" style="display:none; margin-top:16px;" onclick="startGame()">🚀 Start Quiz</button>
+      <button id="startQuizBtn" class="btn" style="display: none;" onclick="startQuiz()">🚀 START QUIZ</button>
     </div>
-    <div class="ad-placeholder" onclick="showDailyQuiz()">📅 Daily Quiz → Earn 50 Coins!</div>
+
+    <!-- Daily Quiz Button -->
+    <button class="btn btn-daily" onclick="openDailyQuiz()">📅 DAILY QUIZ</button>
   </div>
 
-  <!-- QUIZ SCREEN -->
-  <div class="screen" id="screen-quiz">
-    <div class="quiz-header"><span id="qNum">Q1</span><span id="qCatBadge"></span></div>
-    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="score-row">
-      <div class="stat-chip"><div class="val green-val" id="rightCount">0</div><div class="lbl">✅</div></div>
-      <div class="stat-chip"><div class="val red-val" id="wrongCount">0</div><div class="lbl">❌</div></div>
-      <div class="stat-chip"><div class="val sub-val" id="skipCount">0</div><div class="lbl">⏭</div></div>
-      <div class="stat-chip"><div class="val gold-val" id="liveScore">0</div><div class="lbl">🏆</div></div>
+  <!-- QUIZ SCREEN (hidden initially) -->
+  <div id="quizScreen" style="display: none;">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between;"><span id="qCounter">Q1</span><span id="catName"></span></div>
+      <div id="progressBar" style="height: 4px; background: #333; border-radius: 4px; margin: 12px 0;"><div id="progressFill" style="width: 0%; height: 100%; background: #00e5ff; border-radius: 4px;"></div></div>
+      <div style="display: flex; gap: 12px; margin-bottom: 16px;"><div>✅ <span id="rightCount">0</span></div><div>❌ <span id="wrongCount">0</span></div><div>⏭️ <span id="skipCount">0</span></div><div>🏆 <span id="scoreCount">0</span></div></div>
+      <div id="timerDisplay" style="text-align: center; font-size: 24px; font-weight: bold; margin: 8px 0; display: none;"></div>
+      <div id="questionText" style="font-size: 20px; font-weight: 800; margin: 12px 0;"></div>
+      <div id="optionsContainer"></div>
+      <div class="powerup-bar">
+        <div class="powerup" onclick="usePowerup('fifty')">⚡ 50:50 (20🪙)</div>
+        <div class="powerup" onclick="usePowerup('skip')">⏭ Skip (10🪙)</div>
+        <div class="powerup" onclick="usePowerup('change')">🔄 Change (15🪙)</div>
+      </div>
+      <button class="btn" style="background: #ff5555;" onclick="endQuiz()">🏁 End Quiz</button>
     </div>
-    <div id="timerWrap" style="text-align:center; display:none;"><span id="timerNum">10</span> sec</div>
-    <div class="card"><div class="question-text" id="questionText"></div><div id="optionsList"></div></div>
-    <div class="powerups">
-      <button class="powerup-btn" onclick="usePowerup('fiftyfifty')">⚡ 50:50 (20)</button>
-      <button class="powerup-btn" onclick="usePowerup('skip')">⏭ Skip (10)</button>
-      <button class="powerup-btn" onclick="usePowerup('change')">🔄 Change Q (15)</button>
-    </div>
-    <div id="freerunStop" style="display:none;"><button class="btn btn-ghost btn-full" onclick="endGame()">⛔ Stop & Results</button></div>
   </div>
 
   <!-- RESULTS SCREEN -->
-  <div class="screen" id="screen-result">
-    <div style="text-align:center;"><h2 id="resultTitle">Your Score</h2><div id="finalScore" style="font-size:48px;font-weight:800;">0</div></div>
-    <div class="score-row"><div class="stat-chip">✅ Correct: <span id="res-right">0</span></div><div class="stat-chip">❌ Wrong: <span id="res-wrong">0</span></div><div class="stat-chip">⏭ Skipped: <span id="res-skip">0</span></div></div>
-    <div class="result-stats">🏆 Coins earned: +<span id="res-coins">0</span></div>
-    <div id="wrongAnswersCard" style="display:none; margin:16px 0;"><p class="section-title">Review Wrong Answers</p><div id="wrongList"></div></div>
-    <button class="btn btn-cyan btn-full" onclick="playAgain()">🔄 Play Again</button>
-    <button class="btn btn-ghost btn-full" onclick="goHome()">🏠 Home</button>
+  <div id="resultScreen" style="display: none;" class="card">
+    <h2 id="resultTitle">Your Score</h2>
+    <div style="font-size: 48px; font-weight: 800;" id="finalScore">0</div>
+    <div>Correct: <span id="finalRight">0</span> | Wrong: <span id="finalWrong">0</span> | Skipped: <span id="finalSkip">0</span></div>
+    <div>Coins Earned: +<span id="coinsEarned">0</span></div>
+    <div id="wrongList" style="margin-top: 16px; max-height: 200px; overflow-y: auto;"></div>
+    <button class="btn" onclick="backToDashboard()">🏠 Home</button>
   </div>
 </div>
+
+<div id="dailyModal" class="modal">
+  <div class="modal-content">
+    <h3>📅 Daily Quiz</h3>
+    <div id="dailyStatus"></div>
+    <div id="dailyQuestions"></div>
+    <button class="btn" id="closeDailyBtn" onclick="closeDailyModal()">Close</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script>
-// -------------------------- FIREBASE CONFIG --------------------------
+// ---------- FIREBASE ----------
 const firebaseConfig = {
   apiKey: "AIzaSyCkSNiFrju355cCtsby_SHCJuTfMkDbNQM",
   authDomain: "quiz-game-app-ba331.firebaseapp.com",
@@ -242,395 +169,419 @@ const firebaseConfig = {
   appId: "1:370473953623:web:7f4c9612b7c029e0c4b612"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 const auth = firebase.auth();
+const db = firebase.firestore();
 
-// -------------------------- GLOBALS --------------------------
-let coins = parseInt(localStorage.getItem('qm_coins') || '50');
+// ---------- GLOBAL STATE ----------
 let currentUser = null;
-let state = {
-  language: 'English',
-  category: null,
-  mode: null,
-  qCount: 10,
-  timePerQ: 10,
-  questions: [],
-  currentQ: null,
-  qIndex: 0,
-  score: 0,
-  rightCount: 0,
-  wrongCount: 0,
-  skipCount: 0,
-  streak: 0,
-  wrongAnswers: [],
-  timerInterval: null,
-  timeLeft: 10
-};
+let coins = 50;
+let unlockedCategories = [];
+let selectedCategory = null;
+let selectedMode = null;
+let currentLang = "English";
+let currentQuestions = [], currentQuestionObj = null, qIndex = 0, right=0, wrong=0, skipped=0, score=0, streak=0, timerInterval = null, timeLeft = 0;
+let powerupUsed = false;
 
-// 10 categories – first 3 unlocked, others locked
-const ALL_CATEGORIES = [
-  { name: "General Knowledge", key: "GK", locked: false },
-  { name: "Sports", key: "Sports", locked: false },
-  { name: "Bollywood", key: "Bollywood", locked: false },
-  { name: "Science", key: "Science", locked: true },
-  { name: "Songs", key: "Songs", locked: true },
-  { name: "History", key: "History", locked: true },
-  { name: "Geography", key: "Geography", locked: true },
-  { name: "Technology", key: "Technology", locked: true },
-  { name: "Animals", key: "Animals", locked: true },
-  { name: "Comics", key: "Comics", locked: true }
+// 10 categories (3 free, 7 locked)
+const allCategories = [
+  { name: "General Knowledge", key: "GK", locked: false, icon: "🌍" },
+  { name: "Sports", key: "Sports", locked: false, icon: "🏏" },
+  { name: "Bollywood", key: "Bollywood", locked: false, icon: "🎬" },
+  { name: "Science", key: "Science", locked: true, icon: "🔬" },
+  { name: "Songs", key: "Songs", locked: true, icon: "🎵" },
+  { name: "History", key: "History", locked: true, icon: "📜" },
+  { name: "Geography", key: "Geography", locked: true, icon: "🗺️" },
+  { name: "Technology", key: "Technology", locked: true, icon: "💻" },
+  { name: "Animals", key: "Animals", locked: true, icon: "🐘" },
+  { name: "Comics", key: "Comics", locked: true, icon: "🦸" }
 ];
 
-let unlockedCategories = [];
+// ---------- HELPER FUNCTIONS ----------
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerText = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
 
-// -------------------------- UI HELPERS --------------------------
-function showToast(msg){
-  let t = document.getElementById('toast');
-  t.innerText = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2000);
+function updateCoinUI() {
+  document.getElementById('coinsDisplay').innerText = coins;
 }
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+
+function saveUserData() {
+  if(currentUser) db.collection('users').doc(currentUser.uid).set({ coins, unlockedCategories }, { merge: true });
+  else localStorage.setItem('quizania_guest', JSON.stringify({ coins, unlockedCategories }));
 }
-function updateCoinDisplay(){ document.getElementById('coinCount').innerText = coins; }
-function earnCoins(amt){
-  coins += amt;
-  localStorage.setItem('qm_coins', coins);
-  updateCoinDisplay();
-  if(currentUser) db.collection('users').doc(currentUser.uid).set({coins}, {merge:true});
-  showToast(`+${amt} 🪙`);
-}
-function spendCoins(amt){
-  if(coins<amt){ showToast(`Need ${amt} coins!`); return false; }
-  coins -= amt;
-  localStorage.setItem('qm_coins', coins);
-  updateCoinDisplay();
-  if(currentUser) db.collection('users').doc(currentUser.uid).set({coins}, {merge:true});
-  return true;
-}
-// -------------------------- AUTH --------------------------
-auth.onAuthStateChanged(async user => {
-  if(user){
-    currentUser = user;
-    let avatarWrap = document.getElementById('userAvatarWrap');
-    avatarWrap.style.display = 'block';
-    avatarWrap.innerHTML = `<img class="user-avatar" src="${user.photoURL || ''}" onerror="this.src='https://via.placeholder.com/34'">`;
-    let doc = await db.collection('users').doc(user.uid).get();
-    if(doc.exists){
-      coins = doc.data().coins || 50;
-      unlockedCategories = doc.data().unlockedCategories || [];
-    }
-    if(!unlockedCategories.length) unlockedCategories = ALL_CATEGORIES.filter(c=>!c.locked).map(c=>c.key);
-    localStorage.setItem('qm_coins', coins);
-    updateCoinDisplay();
-    showScreen('screen-language');
-    renderCategories();
+
+function loadGuestData() {
+  const data = localStorage.getItem('quizania_guest');
+  if(data) {
+    let g = JSON.parse(data);
+    coins = g.coins || 50;
+    unlockedCategories = g.unlockedCategories || allCategories.filter(c=>!c.locked).map(c=>c.key);
   } else {
-    currentUser = null;
-    document.getElementById('userAvatarWrap').style.display = 'none';
-    let guestUnlocked = localStorage.getItem('guestUnlocked');
-    if(guestUnlocked) unlockedCategories = JSON.parse(guestUnlocked);
-    else unlockedCategories = ALL_CATEGORIES.filter(c=>!c.locked).map(c=>c.key);
-    showScreen('screen-login');
+    coins = 50;
+    unlockedCategories = allCategories.filter(c=>!c.locked).map(c=>c.key);
   }
-});
-function login(){ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-function logout(){ auth.signOut(); localStorage.removeItem('qm_coins'); showScreen('screen-login'); }
-function guestLogin(){
+  updateCoinUI();
+}
+
+async function loadUserData(uid) {
+  const doc = await db.collection('users').doc(uid).get();
+  if(doc.exists) {
+    coins = doc.data().coins || 50;
+    unlockedCategories = doc.data().unlockedCategories || allCategories.filter(c=>!c.locked).map(c=>c.key);
+  } else {
+    coins = 50;
+    unlockedCategories = allCategories.filter(c=>!c.locked).map(c=>c.key);
+  }
+  updateCoinUI();
+}
+
+// ---------- AUTH ----------
+function loginWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(result => onLoginSuccess(result.user)).catch(e => showToast("Login failed"));
+}
+function guestLogin() {
   currentUser = null;
-  let guest = localStorage.getItem('guestUnlocked');
-  unlockedCategories = guest ? JSON.parse(guest) : ALL_CATEGORIES.filter(c=>!c.locked).map(c=>c.key);
-  coins = parseInt(localStorage.getItem('qm_coins') || '50');
-  updateCoinDisplay();
-  showScreen('screen-language');
+  loadGuestData();
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
   renderCategories();
 }
-function toggleUserMenu(){
-  document.getElementById('userMenu').classList.toggle('open');
+function onLoginSuccess(user) {
+  currentUser = user;
+  document.getElementById('avatarWrap').style.display = 'block';
+  document.getElementById('avatarImg').src = user.photoURL || 'https://via.placeholder.com/38';
+  loadUserData(user.uid).then(() => {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    renderCategories();
+  });
 }
-// -------------------------- LANGUAGES --------------------------
-function selectLang(lang, el){
-  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  state.language = lang;
+function toggleMenu() {
+  // simple logout
+  if(confirm("Sign out?")) {
+    auth.signOut();
+    currentUser = null;
+    document.getElementById('avatarWrap').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'block';
+    localStorage.removeItem('quizania_guest');
+  }
 }
-function goToCategory(){ showScreen('screen-category'); renderCategories(); }
-function renderCategories(){
-  let grid = document.getElementById('categoryGrid');
+auth.onAuthStateChanged(user => {
+  if(user) onLoginSuccess(user);
+  else {
+    document.getElementById('loginScreen').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'none';
+  }
+});
+
+// ---------- CATEGORY RENDERING & UNLOCK ----------
+function renderCategories() {
+  const grid = document.getElementById('categoryGrid');
   grid.innerHTML = '';
-  ALL_CATEGORIES.forEach(cat=>{
-    let isUnlocked = unlockedCategories.includes(cat.key);
-    let div = document.createElement('div');
+  allCategories.forEach(cat => {
+    const isUnlocked = unlockedCategories.includes(cat.key);
+    const div = document.createElement('div');
     div.className = `cat-card ${!isUnlocked ? 'locked' : ''}`;
-    let icon = "";
-    if(cat.key==='GK') icon="🌍";
-    else if(cat.key==='Sports') icon="🏏";
-    else if(cat.key==='Bollywood') icon="🎬";
-    else if(cat.key==='Science') icon="🔬";
-    else if(cat.key==='Songs') icon="🎵";
-    else if(cat.key==='History') icon="📜";
-    else if(cat.key==='Geography') icon="🗺️";
-    else if(cat.key==='Technology') icon="💻";
-    else if(cat.key==='Animals') icon="🐘";
-    else icon="🦸";
-    div.innerHTML = `<div class="cat-icon">${icon}</div><div class="cat-name">${cat.name}</div>`;
-    if(isUnlocked){
-      div.onclick = ()=>{ selectCat(cat.key, div); };
+    if(selectedCategory === cat.key) div.classList.add('selected');
+    div.innerHTML = `<div class="cat-icon">${cat.icon}</div><div class="cat-name">${cat.name}</div>`;
+    if(isUnlocked) {
+      div.onclick = () => { selectCategory(cat.key); };
     } else {
-      div.onclick = ()=> unlockCategory(cat);
+      div.onclick = () => unlockCategory(cat);
     }
     grid.appendChild(div);
   });
 }
-function selectCat(cat, el){
-  document.querySelectorAll('.cat-card').forEach(c=>c.style.borderColor='');
-  el.style.borderColor = 'var(--cyan)';
-  state.category = cat;
-  document.getElementById('catNextBtn').style.display = 'block';
+
+function selectCategory(key) {
+  selectedCategory = key;
+  renderCategories();
+  checkStartEnabled();
 }
-function unlockCategory(cat){
+
+function unlockCategory(cat) {
   if(unlockedCategories.includes(cat.key)) return;
-  let choice = confirm(`Unlock "${cat.name}"?\nOK = Watch ad (free)\nCancel = Pay 100 coins`);
-  if(choice){
-    showToast('📺 Ad watched! Category unlocked');
-    unlockedCategories.push(cat.key);
-    if(currentUser) db.collection('users').doc(currentUser.uid).set({unlockedCategories}, {merge:true});
-    else localStorage.setItem('guestUnlocked', JSON.stringify(unlockedCategories));
-    renderCategories();
-  } else {
-    if(spendCoins(100)){
+  if(coins >= 100) {
+    if(confirm(`Unlock ${cat.name} for 100 coins?`)) {
+      coins -= 100;
       unlockedCategories.push(cat.key);
-      if(currentUser) db.collection('users').doc(currentUser.uid).set({unlockedCategories}, {merge:true});
-      else localStorage.setItem('guestUnlocked', JSON.stringify(unlockedCategories));
+      updateCoinUI();
+      saveUserData();
       renderCategories();
-      showToast(`✅ ${cat.name} unlocked!`);
+      showToast(`${cat.name} unlocked!`);
     }
-  }
-}
-function goToMode(){
-  if(!state.category){ showToast('Select a category first'); return; }
-  showScreen('screen-mode');
-}
-function selectMode(mode, el){
-  document.querySelectorAll('.mode-card').forEach(m=>m.classList.remove('selected'));
-  el.classList.add('selected');
-  state.mode = mode;
-  document.getElementById('timeboundSettings').style.display = mode==='timebound'?'block':'none';
-  document.getElementById('startBtn').style.display = 'block';
-  if(mode==='timebound'){
-    state.qCount = parseInt(document.getElementById('qCountSelect').value);
-    state.timePerQ = parseInt(document.getElementById('timeSelect').value);
   } else {
-    state.qCount = 0; // infinite
+    showToast(`Not enough coins! Need 100 to unlock ${cat.name}`);
   }
 }
-// -------------------------- DEMO FALLBACK QUESTIONS --------------------------
-function getDemoQuestions(category, langCode){
-  const fallback = {
-    GK: [{q_en:"What is capital of India?",q_hi:"भारत की राजधानी?",q_mr:"भारताची राजधानी?", opts_en:["Delhi","Mumbai","Kolkata","Chennai"], opts_hi:["दिल्ली","मुंबई","कोलकाता","चेन्नई"], opts_mr:["दिल्ली","मुंबई","कोलकाता","चेन्नई"], ans:0}],
-    Sports: [{q_en:"How many players in cricket?",q_hi:"क्रिकेट में कितने खिलाड़ी?",q_mr:"क्रिकेटमध्ये किती खेळाडू?", opts_en:["11","10","12","9"], opts_hi:["11","10","12","9"], opts_mr:["11","10","12","9"], ans:0}]
-  };
-  let catFallback = fallback[category] || fallback.GK;
-  return catFallback.map(q => ({
-    q: q[`q_${langCode}`] || q.q_en,
-    opts: q[`opts_${langCode}`] || q.opts_en,
-    ans: q.ans
-  }));
+
+// ---------- LANGUAGE & MODE ----------
+function setLanguage(lang, el) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
 }
-// -------------------------- QUIZ ENGINE --------------------------
-async function startGame(){
-  if(!state.mode || !state.category) return;
-  state.score=0; state.rightCount=0; state.wrongCount=0; state.skipCount=0; state.wrongAnswers=[];
-  state.qIndex=0; state.streak=0;
-  let suffix = state.language==='English'?'en':state.language==='Hindi'?'hi':'mr';
-  let qField = `question_${suffix}`;
-  let optsField = `options_${suffix}`;
-  let snap;
+function setMode(mode, el) {
+  selectedMode = mode;
+  document.querySelectorAll('.mode-option').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('timeSettings').style.display = mode === 'timebound' ? 'block' : 'none';
+  checkStartEnabled();
+}
+function checkStartEnabled() {
+  const btn = document.getElementById('startQuizBtn');
+  if(selectedCategory && selectedMode) btn.style.display = 'block';
+  else btn.style.display = 'none';
+}
+
+// ---------- QUIZ ENGINE (with fallback questions) ----------
+async function fetchQuestions(category, lang) {
+  const langMap = { English: 'en', Hindi: 'hi', Marathi: 'mr' };
+  const suffix = langMap[lang] || 'en';
+  const qField = `question_${suffix}`;
+  const optField = `options_${suffix}`;
   try {
-    snap = await db.collection('questions').where('category','==',state.category).get();
-  } catch(e){ snap = { empty: true }; }
-  let qlist = [];
-  if(!snap.empty){
-    snap.forEach(doc=>{
-      let d = doc.data();
-      let qtext = d[qField];
-      let opts = d[optsField];
-      if(qtext && opts && opts.length>=2){
-        qlist.push({ q: qtext, opts: opts, ans: d.answer });
-      }
+    const snap = await db.collection('questions').where('category','==',category).get();
+    let qs = [];
+    snap.forEach(d => {
+      let data = d.data();
+      let qText = data[qField] || data.question_en;
+      let opts = data[optField] || data.options_en;
+      if(qText && opts && opts.length>=2) qs.push({ q: qText, opts: opts, ans: data.answer });
     });
-  }
-  if(qlist.length===0){
-    showToast('Using demo questions (Firestore empty or error)');
-    qlist = getDemoQuestions(state.category, suffix);
-  }
-  state.questions = qlist.sort(()=>Math.random()-0.5);
-  if(state.mode==='timebound'){
-    let limit = state.qCount || 10;
-    state.questions = state.questions.slice(0, limit);
-  }
-  showScreen('screen-quiz');
-  document.getElementById('freerunStop').style.display = state.mode==='freerun'?'block':'none';
-  document.getElementById('timerWrap').style.display = state.mode==='timebound'?'block':'none';
-  document.getElementById('qCatBadge').innerText = state.category;
-  updateScoreUI();
+    if(qs.length) return qs;
+  } catch(e) {}
+  // fallback
+  return [
+    { q: `Sample ${category} question in ${lang}?`, opts: ["Option A","B","C","D"], ans: 0 },
+    { q: "Second sample question", opts: ["X","Y","Z","W"], ans: 1 }
+  ];
+}
+
+async function startQuiz() {
+  if(!selectedCategory || !selectedMode) return;
+  right=0; wrong=0; skipped=0; score=0; streak=0; qIndex=0;
+  const qCount = selectedMode === 'timebound' ? parseInt(document.getElementById('qCountSel').value) : 99999;
+  const questionsAll = await fetchQuestions(selectedCategory, currentLang);
+  currentQuestions = questionsAll.sort(() => Math.random() - 0.5).slice(0, qCount);
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  document.getElementById('catName').innerText = selectedCategory;
+  updateQuizUI();
   nextQuestion();
 }
-function nextQuestion(){
-  if(state.questions.length===0){
-    if(state.mode==='freerun'){
-      // no more questions in free run – end game?
-      endGame();
-      return;
-    } else {
-      endGame();
-      return;
-    }
+
+function updateQuizUI() {
+  document.getElementById('rightCount').innerText = right;
+  document.getElementById('wrongCount').innerText = wrong;
+  document.getElementById('skipCount').innerText = skipped;
+  document.getElementById('scoreCount').innerText = score;
+  if(selectedMode === 'timebound' && currentQuestions.length) {
+    let percent = (qIndex / currentQuestions.length) * 100;
+    document.getElementById('progressFill').style.width = percent + '%';
+    document.getElementById('qCounter').innerText = `Q${qIndex+1}/${currentQuestions.length}`;
+  } else {
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('qCounter').innerText = `Q${qIndex+1}`;
   }
-  clearInterval(state.timerInterval);
-  let idx = Math.floor(Math.random()*state.questions.length);
-  state.currentQ = state.questions[idx];
-  state.questions.splice(idx,1);
-  state.qIndex++;
-  document.getElementById('questionText').innerHTML = state.currentQ.q;
-  let optsDiv = document.getElementById('optionsList');
+}
+
+function nextQuestion() {
+  if(timerInterval) clearInterval(timerInterval);
+  if(currentQuestions.length === 0 || qIndex >= currentQuestions.length) {
+    endQuiz();
+    return;
+  }
+  currentQuestionObj = currentQuestions[qIndex];
+  document.getElementById('questionText').innerHTML = currentQuestionObj.q;
+  const optsDiv = document.getElementById('optionsContainer');
   optsDiv.innerHTML = '';
-  state.currentQ.opts.forEach((opt,i)=>{
+  currentQuestionObj.opts.forEach((opt, i) => {
     let btn = document.createElement('button');
     btn.className = 'option-btn';
     btn.innerText = `${String.fromCharCode(65+i)}. ${opt}`;
-    btn.onclick = ()=>checkAnswer(i,btn);
+    btn.onclick = () => checkAnswer(i, btn);
     optsDiv.appendChild(btn);
   });
-  if(state.mode==='timebound'){
-    state.timeLeft = state.timePerQ;
-    document.getElementById('timerNum').innerText = state.timeLeft;
-    state.timerInterval = setInterval(()=>{
-      if(state.timeLeft<=1){
-        clearInterval(state.timerInterval);
-        state.skipCount++;
-        updateScoreUI();
-        showToast("Time's up!");
+  if(selectedMode === 'timebound') {
+    let timePer = parseInt(document.getElementById('timePerQSel').value);
+    timeLeft = timePer;
+    document.getElementById('timerDisplay').style.display = 'block';
+    timerInterval = setInterval(() => {
+      if(timeLeft <= 1) {
+        clearInterval(timerInterval);
+        skipped++;
+        updateQuizUI();
+        showToast("Time's up! Skipped.");
+        qIndex++;
         nextQuestion();
       } else {
-        state.timeLeft--;
-        document.getElementById('timerNum').innerText = state.timeLeft;
+        timeLeft--;
+        document.getElementById('timerDisplay').innerText = `⏱️ ${timeLeft}s`;
       }
-    },1000);
+    }, 1000);
+    document.getElementById('timerDisplay').innerText = `⏱️ ${timeLeft}s`;
+  } else {
+    document.getElementById('timerDisplay').style.display = 'none';
   }
-  updateScoreUI();
+  updateQuizUI();
 }
-function checkAnswer(idx,btn){
-  if(state.mode==='timebound') clearInterval(state.timerInterval);
-  let correct = state.currentQ.ans;
-  if(idx===correct){
+
+function checkAnswer(idx, btn) {
+  if(timerInterval) clearInterval(timerInterval);
+  const correct = currentQuestionObj.ans;
+  const allBtns = document.querySelectorAll('.option-btn');
+  if(idx === correct) {
     btn.classList.add('correct');
-    state.rightCount++;
-    let earned = 5 + (state.streak>=3?state.streak*2:0);
-    earnCoins(earned);
-    state.score += 10;
-    state.streak++;
+    right++;
+    let earn = 5 + (streak>=3 ? streak*2 : 0);
+    coins += earn;
+    score += 10;
+    streak++;
+    updateCoinUI();
+    showToast(`+${earn} coins!`);
   } else {
     btn.classList.add('wrong');
-    document.querySelectorAll('.option-btn')[correct].classList.add('correct');
-    state.wrongCount++;
-    state.streak=0;
-    state.wrongAnswers.push({q:state.currentQ.q, your:state.currentQ.opts[idx], correct:state.currentQ.opts[correct]});
+    allBtns[correct].classList.add('correct');
+    wrong++;
+    streak=0;
   }
-  updateScoreUI();
-  setTimeout(nextQuestion, 1000);
+  updateQuizUI();
+  qIndex++;
+  setTimeout(() => nextQuestion(), 1000);
 }
-function updateScoreUI(){
-  document.getElementById('rightCount').innerText = state.rightCount;
-  document.getElementById('wrongCount').innerText = state.wrongCount;
-  document.getElementById('skipCount').innerText = state.skipCount;
-  document.getElementById('liveScore').innerText = state.score;
-  let total = state.rightCount+state.wrongCount+state.skipCount;
-  if(state.mode==='timebound' && state.qCount>0){
-    let pct = (state.qIndex-1)/state.qCount*100;
-    document.getElementById('progressBar').style.width = pct+'%';
-  }
-  let qNumDisplay = state.mode==='timebound' ? `${state.qIndex}/${state.qCount}` : `Q${state.qIndex}`;
-  document.getElementById('qNum').innerText = qNumDisplay;
-}
-function usePowerup(type){
-  let cost = { fiftyfifty:20, skip:10, change:15 }[type];
-  if(!spendCoins(cost)) return;
-  if(type==='skip'){
-    clearInterval(state.timerInterval);
-    state.skipCount++; updateScoreUI(); nextQuestion();
-  } else if(type==='change'){
-    clearInterval(state.timerInterval);
-    nextQuestion();
-  } else if(type==='fiftyfifty'){
-    let correctIdx = state.currentQ.ans;
-    let btns = document.querySelectorAll('.option-btn');
-    let wrongIdxs = [];
-    for(let i=0;i<btns.length;i++) if(i!==correctIdx) wrongIdxs.push(i);
-    wrongIdxs.sort(()=>0.5-Math.random());
-    for(let i=0;i<2 && i<wrongIdxs.length;i++) if(btns[wrongIdxs[i]]) btns[wrongIdxs[i]].remove();
-  }
-}
-function endGame(){
-  clearInterval(state.timerInterval);
-  let earned = state.rightCount*5;
-  earnCoins(earned);
-  document.getElementById('res-right').innerText = state.rightCount;
-  document.getElementById('res-wrong').innerText = state.wrongCount;
-  document.getElementById('res-skip').innerText = state.skipCount;
-  document.getElementById('res-coins').innerText = earned;
-  document.getElementById('finalScore').innerText = state.score;
-  let wrongDiv = document.getElementById('wrongAnswersCard');
-  if(state.wrongAnswers.length){
-    wrongDiv.style.display='block';
-    document.getElementById('wrongList').innerHTML = state.wrongAnswers.map(w=>`<div>❌ ${w.q}<br><span style="font-size:12px;">Your: ${w.your} | Correct: ${w.correct}</span></div>`).join('');
-  } else wrongDiv.style.display='none';
-  showScreen('screen-result');
-}
-function goHome(){ showScreen('screen-mode'); state.category=null; state.mode=null; document.getElementById('startBtn').style.display='none'; }
-function playAgain(){ goHome(); }
 
-// -------------------------- DAILY QUIZ --------------------------
-async function showDailyQuiz(){
-  let today = new Date().toISOString().slice(0,10);
-  let lastDaily = localStorage.getItem('lastDaily');
-  if(lastDaily === today){
-    showToast("You already completed today's Daily Quiz! Come back tomorrow.");
-    return;
+function usePowerup(type) {
+  if(powerupUsed) return;
+  let cost = type==='fifty'?20 : type==='skip'?10 : 15;
+  if(coins < cost) { showToast(`Need ${cost} coins`); return; }
+  coins -= cost;
+  updateCoinUI();
+  powerupUsed = true;
+  if(type === 'skip') {
+    if(timerInterval) clearInterval(timerInterval);
+    skipped++;
+    updateQuizUI();
+    qIndex++;
+    nextQuestion();
+  } else if(type === 'change') {
+    if(timerInterval) clearInterval(timerInterval);
+    nextQuestion();
+  } else if(type === 'fifty') {
+    let btns = document.querySelectorAll('.option-btn');
+    let correctIdx = currentQuestionObj.ans;
+    let toRemove = [];
+    for(let i=0; i<btns.length; i++) if(i !== correctIdx) toRemove.push(i);
+    toRemove.sort(()=>0.5-Math.random());
+    for(let i=0; i<2 && i<toRemove.length; i++) btns[toRemove[i]].remove();
   }
-  let suffix = state.language==='English'?'en':state.language==='Hindi'?'hi':'mr';
-  let snap;
-  try {
-    snap = await db.collection('questions').limit(5).get();
-  } catch(e){ snap = { empty: true }; }
-  let dailyQs = [];
-  if(!snap.empty){
-    snap.forEach(doc=>{
-      let d = doc.data();
-      let q = d[`question_${suffix}`] || d.question_en;
-      let opts = d[`options_${suffix}`] || d.options;
-      if(q && opts) dailyQs.push({ q, opts, ans: d.answer });
+  setTimeout(()=> powerupUsed=false, 500);
+}
+
+function endQuiz() {
+  if(timerInterval) clearInterval(timerInterval);
+  let earned = right * 5;
+  coins += earned;
+  updateCoinUI();
+  saveUserData();
+  document.getElementById('finalScore').innerText = score;
+  document.getElementById('finalRight').innerText = right;
+  document.getElementById('finalWrong').innerText = wrong;
+  document.getElementById('finalSkip').innerText = skipped;
+  document.getElementById('coinsEarned').innerText = earned;
+  // wrong answers list
+  // not storing full wrong answers here for brevity, but can be added
+  document.getElementById('resultScreen').style.display = 'block';
+  document.getElementById('quizScreen').style.display = 'none';
+}
+function backToDashboard() {
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  selectedMode = null; selectedCategory = null;
+  renderCategories();
+  checkStartEnabled();
+}
+// ---------- DAILY QUIZ (popup with countdown) ----------
+function openDailyQuiz() {
+  const modal = document.getElementById('dailyModal');
+  const statusDiv = document.getElementById('dailyStatus');
+  const questionsDiv = document.getElementById('dailyQuestions');
+  const lastDaily = localStorage.getItem('dailyQuizDate');
+  const today = new Date().toISOString().slice(0,10);
+  if(lastDaily === today) {
+    // countdown until next reset (midnight UTC)
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setUTCHours(24,0,0,0);
+    const diff = Math.floor((midnight - now) / 1000);
+    const hours = Math.floor(diff/3600);
+    const mins = Math.floor((diff%3600)/60);
+    statusDiv.innerHTML = `✅ You already played today! Next quiz available in ${hours}h ${mins}m.`;
+    questionsDiv.style.display = 'none';
+    document.getElementById('closeDailyBtn').style.display = 'block';
+  } else {
+    statusDiv.innerHTML = "🎯 5 random questions, earn 50 coins if you get 3+ correct!";
+    questionsDiv.style.display = 'block';
+    // load 5 random questions from any category (or use fallback)
+    fetchRandomQuestions(5).then(qs => {
+      questionsDiv.innerHTML = '';
+      let answers = [];
+      qs.forEach((q, i) => {
+        let div = document.createElement('div');
+        div.style.margin = '12px 0';
+        div.innerHTML = `<strong>${i+1}. ${q.q}</strong><br>${q.opts.map((opt,idx)=>`<label><input type="radio" name="q${i}" value="${idx}"> ${opt}</label><br>`).join('')}`;
+        questionsDiv.appendChild(div);
+        answers.push(q.ans);
+      });
+      const submitBtn = document.createElement('button');
+      submitBtn.className = 'btn';
+      submitBtn.innerText = 'Submit Daily Quiz';
+      submitBtn.onclick = () => {
+        let correctCount = 0;
+        for(let i=0; i<qs.length; i++) {
+          let selected = document.querySelector(`input[name="q${i}"]:checked`);
+          if(selected && parseInt(selected.value) === answers[i]) correctCount++;
+        }
+        if(correctCount >= 3) {
+          coins += 50;
+          updateCoinUI();
+          saveUserData();
+          localStorage.setItem('dailyQuizDate', today);
+          showToast("🎉 Great! You earned 50 coins!");
+        } else {
+          showToast(`You got ${correctCount}/5. Need 3+ to earn coins.`);
+        }
+        closeDailyModal();
+      };
+      questionsDiv.appendChild(submitBtn);
+      document.getElementById('closeDailyBtn').style.display = 'none';
     });
   }
-  if(dailyQs.length<3) dailyQs = getDemoQuestions('GK', suffix).slice(0,5);
-  let scoreDaily = 0;
-  for(let i=0;i<dailyQs.length;i++){
-    let q = dailyQs[i];
-    let userAns = prompt(`Daily Quiz Q${i+1}/${dailyQs.length}\n${q.q}\nOptions:\n${q.opts.map((o,idx)=>`${idx+1}. ${o}`).join('\n')}\n\nType number 1-${q.opts.length}`);
-    let selected = parseInt(userAns)-1;
-    if(selected===q.ans) scoreDaily++;
-  }
-  if(scoreDaily >=3){
-    earnCoins(50);
-    localStorage.setItem('lastDaily', today);
-    showToast(`Daily Quiz done! You earned 50 coins!`);
-  } else {
-    showToast(`You got ${scoreDaily}/5 correct. No coins this time.`);
-  }
+  modal.classList.add('active');
 }
-// initial render
-updateCoinDisplay();
+async function fetchRandomQuestions(limit) {
+  try {
+    const snap = await db.collection('questions').limit(limit).get();
+    let qs = [];
+    snap.forEach(d => {
+      let data = d.data();
+      let qText = data[`question_${currentLang==='English'?'en':currentLang==='Hindi'?'hi':'mr'}`] || data.question_en;
+      let opts = data[`options_${currentLang==='English'?'en':currentLang==='Hindi'?'hi':'mr'}`] || data.options_en;
+      if(qText && opts) qs.push({ q: qText, opts, ans: data.answer });
+    });
+    if(qs.length) return qs;
+  } catch(e) {}
+  return Array(limit).fill().map((_,i) => ({ q: `Sample daily question ${i+1}`, opts: ["A","B","C","D"], ans: 0 }));
+}
+function closeDailyModal() {
+  document.getElementById('dailyModal').classList.remove('active');
+}
+// initial render of categories
 renderCategories();
 </script>
 </body>
