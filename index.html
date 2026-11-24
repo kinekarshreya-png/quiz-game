@@ -3,173 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Quizania</title>
+  <title>Quizania - Weekly Championship</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #080812;
-      --surface: rgba(255,255,255,0.04);
-      --surface2: rgba(255,255,255,0.08);
-      --border: rgba(255,255,255,0.09);
-      --accent: #7c5cfc;
-      --accent2: #ff6b9d;
-      --gold: #f5c518;
+      /* Premium Cyberpunk Palette */
+      --bg: #04040a;
+      --surface: rgba(255, 255, 255, 0.03);
+      --surface-hover: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #00f0ff; /* Cyan */
+      --accent2: #ff0055; /* Neon Pink */
+      --gold: #ffcc00;
       --green: #00e887;
       --red: #ff4f4f;
-      --text: #eef0ff;
-      --muted: #7b7d9a;
-      --radius: 20px;
+      --text: #ffffff;
+      --muted: #8b8b9f;
+      --radius: 24px;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
 
     /* BACKGROUND */
     .bg-wrap { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
-    .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.18; }
-    .orb1 { width:500px; height:500px; background:var(--accent); top:-150px; left:-100px; animation:drift 14s ease-in-out infinite alternate; }
-    .orb2 { width:400px; height:400px; background:var(--accent2); bottom:-100px; right:-80px; animation:drift 18s ease-in-out infinite alternate-reverse; }
-    .orb3 { width:250px; height:250px; background:#00cfff; top:40%; left:50%; animation:drift 10s ease-in-out infinite alternate; }
-    @keyframes drift { 0%{transform:translate(0,0)} 100%{transform:translate(30px,40px)} }
-    .noise { position:fixed; inset:0; z-index:0; opacity:0.03; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+    .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.15; }
+    .orb1 { width:600px; height:600px; background:var(--accent); top:-200px; left:-150px; animation:drift 15s ease-in-out infinite alternate; }
+    .orb2 { width:500px; height:500px; background:var(--accent2); bottom:-150px; right:-100px; animation:drift 20s ease-in-out infinite alternate-reverse; }
+    .orb3 { width:300px; height:300px; background:#7000ff; top:40%; left:50%; animation:drift 12s ease-in-out infinite alternate; }
+    @keyframes drift { 0%{transform:translate(0,0)} 100%{transform:translate(40px,60px)} }
+    .noise { position:fixed; inset:0; z-index:0; opacity:0.04; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-    .wrap { max-width:520px; margin:0 auto; padding:20px 16px 60px; position:relative; z-index:1; }
+    .wrap { max-width:520px; margin:0 auto; padding:20px 16px 80px; position:relative; z-index:1; }
 
     /* TOP BAR */
-    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
-    .logo { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.5px; background:linear-gradient(135deg,#a78bfa,#f472b6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-    .logo span { opacity:0.6; }
-    .topright { display:flex; gap:10px; align-items:center; }
-    .coins { display:flex; align-items:center; gap:6px; background:rgba(245,197,24,0.12); border:1px solid rgba(245,197,24,0.25); border-radius:40px; padding:6px 14px; font-weight:700; color:var(--gold); font-size:14px; }
-    .avatar { width:36px; height:36px; border-radius:50%; border:2px solid var(--accent); cursor:pointer; object-fit:cover; display:none; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+    .logo { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; letter-spacing:-0.5px; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .logo span { opacity:0.7; }
+    .topright { display:flex; gap:12px; align-items:center; }
+    .coins { display:flex; align-items:center; gap:6px; background:rgba(255, 204, 0, 0.1); border:1px solid rgba(255, 204, 0, 0.3); border-radius:40px; padding:6px 16px; font-weight:700; color:var(--gold); font-size:14px; box-shadow: 0 0 15px rgba(255, 204, 0, 0.1); }
+    .avatar { width:38px; height:38px; border-radius:50%; border:2px solid var(--accent); cursor:pointer; object-fit:cover; display:none; box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); }
 
     /* CARDS */
-    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:16px; backdrop-filter:blur(20px); }
-    .card-title { font-size:10px; letter-spacing:2.5px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:14px; }
-
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px; margin-bottom:16px; backdrop-filter:blur(20px); transition: all 0.3s; }
+    .card-title { font-size:11px; letter-spacing:2.5px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;}
+    
     /* LOGIN */
     #loginScreen { text-align:center; padding:40px 24px; }
     .login-icon { font-size:72px; margin-bottom:16px; display:block; animation:pop 0.6s cubic-bezier(0.34,1.56,0.64,1); }
     @keyframes pop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
-    #loginScreen h2 { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; background:linear-gradient(135deg,#a78bfa,#f472b6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    #loginScreen h2 { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
     #loginScreen p { color:var(--muted); margin:10px 0 28px; font-size:15px; }
-    .btn-google { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:14px; border-radius:40px; background:#fff; color:#1a1a2e; font-weight:700; border:none; cursor:pointer; font-size:15px; font-family:'Space Grotesk',sans-serif; transition:opacity 0.2s,transform 0.2s; }
-    .btn-google:hover { opacity:0.9; transform:translateY(-1px); }
-    .btn-guest { display:block; width:100%; padding:13px; border-radius:40px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-weight:700; font-size:15px; font-family:'Space Grotesk',sans-serif; cursor:pointer; margin-top:10px; transition:all 0.2s; }
-    .btn-guest:hover { border-color:var(--accent); background:rgba(124,92,252,0.1); }
+    .btn-google { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:15px; border-radius:40px; background:#fff; color:#1a1a2e; font-weight:700; border:none; cursor:pointer; font-size:15px; font-family:'Space Grotesk',sans-serif; transition:all 0.2s; }
+    .btn-google:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(255,255,255,0.2); }
+    .btn-guest { display:block; width:100%; padding:14px; border-radius:40px; background:var(--surface-hover); border:1px solid var(--border); color:var(--text); font-weight:700; font-size:15px; font-family:'Space Grotesk',sans-serif; cursor:pointer; margin-top:12px; transition:all 0.2s; }
+    .btn-guest:hover { border-color:var(--accent); background:rgba(0,240,255,0.1); }
 
     /* LANG TABS */
     .lang-row { display:flex; gap:8px; }
-    .lang-btn { flex:1; padding:9px; border-radius:12px; background:transparent; border:1px solid var(--border); color:var(--muted); font-weight:600; font-size:13px; cursor:pointer; transition:all 0.2s; font-family:'Space Grotesk',sans-serif; }
-    .lang-btn.active { background:rgba(124,92,252,0.2); border-color:var(--accent); color:#a78bfa; }
+    .lang-btn { flex:1; padding:10px; border-radius:12px; background:transparent; border:1px solid var(--border); color:var(--muted); font-weight:600; font-size:13px; cursor:pointer; transition:all 0.2s; font-family:'Space Grotesk',sans-serif; }
+    .lang-btn.active { background:rgba(0,240,255,0.1); border-color:var(--accent); color:var(--accent); box-shadow: 0 0 10px rgba(0, 240, 255, 0.1); }
 
     /* CATEGORIES */
-    .cat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-    .cat-card { background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:14px 12px; cursor:pointer; transition:all 0.2s; text-align:center; position:relative; }
-    .cat-card:hover:not(.locked) { border-color:var(--accent); background:rgba(124,92,252,0.1); transform:translateY(-2px); }
-    .cat-card.selected { border-color:var(--accent); background:rgba(124,92,252,0.15); }
-    .cat-card.locked { opacity:0.55; cursor:default; }
-    .lock-badge { position:absolute; top:8px; right:10px; font-size:12px; }
-    .cat-icon { font-size:28px; }
-    .cat-name { font-size:12px; font-weight:700; margin-top:6px; color:var(--text); }
-    .cat-sub { font-size:10px; color:var(--muted); margin-top:2px; }
+    .cat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .cat-card { background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:16px 12px; cursor:pointer; transition:all 0.2s; text-align:center; position:relative; overflow:hidden; }
+    .cat-card:hover:not(.locked) { border-color:var(--accent); background:rgba(0,240,255,0.05); transform:translateY(-2px); }
+    .cat-card.selected { border-color:var(--accent); background:rgba(0,240,255,0.1); box-shadow:0 0 15px rgba(0,240,255,0.15); }
+    .cat-card.locked { opacity:0.5; cursor:default; background:rgba(0,0,0,0.2); }
+    .lock-badge { position:absolute; top:10px; right:12px; font-size:12px; }
+    .cat-icon { font-size:32px; text-shadow:0 0 10px rgba(255,255,255,0.2); }
+    .cat-name { font-size:13px; font-weight:700; margin-top:8px; color:var(--text); }
+    .cat-sub { font-size:10px; color:var(--muted); margin-top:4px; }
 
     /* MODES */
-    .mode-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .mode-card { padding:14px; border-radius:16px; border:1.5px solid var(--border); background:var(--surface); cursor:pointer; transition:all 0.2s; text-align:center; }
-    .mode-card:hover { border-color:var(--accent); }
-    .mode-card.selected { border-color:var(--accent); background:rgba(124,92,252,0.15); }
-    .mode-icon { font-size:24px; margin-bottom:6px; }
-    .mode-name { font-weight:700; font-size:14px; }
-    .mode-desc { font-size:11px; color:var(--muted); margin-top:3px; }
-    .time-settings { margin-top:12px; padding:14px; background:rgba(0,0,0,0.3); border-radius:14px; display:none; gap:16px; flex-wrap:wrap; }
-    .time-settings label { font-size:12px; color:var(--muted); display:block; margin-bottom:4px; }
-    .time-settings select { background:rgba(255,255,255,0.08); border:1px solid var(--border); border-radius:10px; padding:7px 10px; color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:13px; }
+    .mode-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .mode-card { padding:16px; border-radius:16px; border:1.5px solid var(--border); background:var(--surface); cursor:pointer; transition:all 0.2s; text-align:center; }
+    .mode-card:hover { border-color:var(--accent2); }
+    .mode-card.selected { border-color:var(--accent2); background:rgba(255,0,85,0.1); box-shadow:0 0 15px rgba(255,0,85,0.15); }
+    .mode-icon { font-size:26px; margin-bottom:8px; }
+    .mode-name { font-weight:700; font-size:15px; }
+    .mode-desc { font-size:11px; color:var(--muted); margin-top:4px; }
+    .time-settings { margin-top:14px; padding:16px; background:rgba(0,0,0,0.4); border-radius:14px; display:none; gap:16px; flex-wrap:wrap; border:1px solid var(--border); }
+    .time-settings label { font-size:12px; color:var(--muted); display:block; margin-bottom:6px; }
+    .time-settings select { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; padding:8px 12px; color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:14px; outline:none; }
 
-    /* MAIN BUTTON */
-    .btn-main { display:none; width:100%; padding:15px; border-radius:40px; background:linear-gradient(135deg,#7c5cfc,#a855f7); color:#fff; font-weight:700; font-size:16px; border:none; cursor:pointer; margin-top:12px; font-family:'Space Grotesk',sans-serif; transition:transform 0.2s,box-shadow 0.2s; box-shadow:0 4px 20px rgba(124,92,252,0.35); }
-    .btn-main:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(124,92,252,0.5); }
-    .btn-daily { width:100%; padding:14px; border-radius:40px; background:linear-gradient(135deg,#f5c518,#f97316); color:#000; font-weight:800; font-size:15px; border:none; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-bottom:10px; transition:transform 0.2s; }
-    .btn-daily:hover { transform:translateY(-2px); }
-    .btn-stats { width:100%; padding:14px; border-radius:40px; background:rgba(124,92,252,0.15); border:1px solid rgba(124,92,252,0.4); color:#a78bfa; font-weight:700; font-size:15px; cursor:pointer; font-family:'Space Grotesk',sans-serif; transition:all 0.2s; }
-    .btn-stats:hover { background:rgba(124,92,252,0.25); }
+    /* MAIN BUTTONS */
+    .btn-main { display:none; width:100%; padding:16px; border-radius:40px; background:linear-gradient(135deg,var(--accent),#0077ff); color:#000; font-weight:800; font-size:16px; border:none; cursor:pointer; margin-top:16px; font-family:'Space Grotesk',sans-serif; transition:all 0.2s; box-shadow:0 4px 20px rgba(0,240,255,0.3); }
+    .btn-main:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,240,255,0.5); }
+    .btn-daily { width:100%; padding:16px; border-radius:40px; background:linear-gradient(135deg,var(--gold),#ff8800); color:#000; font-weight:800; font-size:15px; border:none; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-bottom:12px; transition:all 0.2s; box-shadow:0 4px 20px rgba(255,204,0,0.2); }
+    .btn-daily:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(255,204,0,0.4); }
+    .btn-stats { width:100%; padding:14px; border-radius:40px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text); font-weight:700; font-size:15px; cursor:pointer; font-family:'Space Grotesk',sans-serif; transition:all 0.2s; margin-bottom:12px; }
+    .btn-stats:hover { background:rgba(255,255,255,0.1); border-color:var(--accent); }
+    .btn-champ { width:100%; padding:16px; border-radius:40px; background:linear-gradient(135deg,#7000ff,var(--accent2)); color:#fff; font-weight:800; font-size:15px; border:none; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-bottom:12px; transition:all 0.2s; box-shadow:0 4px 20px rgba(112,0,255,0.3); display:flex; justify-content:center; align-items:center; gap:8px;}
+    .btn-champ:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(112,0,255,0.5); }
+
+    /* WEEKLY MISSION */
+    .mission-box { background:linear-gradient(135deg, rgba(0,240,255,0.1), rgba(112,0,255,0.1)); border:1px solid rgba(0,240,255,0.2); border-radius:16px; padding:16px; margin-bottom:16px; }
+    .mission-header { display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:8px; }
+    .mission-progress-bg { height:8px; background:rgba(0,0,0,0.5); border-radius:10px; overflow:hidden; }
+    .mission-progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:10px; width:0%; transition:width 0.5s; }
 
     /* QUIZ SCREEN */
     #quizScreen { display:none; }
     .quiz-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-    .q-counter { font-size:13px; font-weight:700; color:var(--muted); }
-    .cat-tag { background:rgba(124,92,252,0.2); border:1px solid rgba(124,92,252,0.3); color:#a78bfa; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
-    .streak-tag { background:rgba(245,197,24,0.15); color:var(--gold); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700; display:none; }
-    .progress-bar { height:3px; background:rgba(255,255,255,0.08); border-radius:3px; margin-bottom:16px; overflow:hidden; }
-    .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:3px; transition:width 0.5s ease; }
-    .score-row { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:16px; }
-    .score-cell { background:var(--surface); border-radius:12px; padding:8px; text-align:center; border:1px solid var(--border); }
-    .score-cell .icon { font-size:14px; }
-    .score-cell .val { font-size:18px; font-weight:800; }
-    .score-cell .lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
-    .timer-display { text-align:center; font-size:28px; font-weight:800; margin:8px 0; color:var(--accent); display:none; }
-    .timer-display.urgent { color:var(--red); animation:pulse 0.5s ease-in-out infinite alternate; }
-    @keyframes pulse { 0%{opacity:1} 100%{opacity:0.5} }
-    .question-text { font-size:19px; font-weight:700; line-height:1.5; margin:16px 0; }
-    .option-btn { display:block; width:100%; padding:13px 16px; background:var(--surface); border:1.5px solid var(--border); border-radius:14px; margin-bottom:8px; text-align:left; font-weight:600; font-size:14px; cursor:pointer; transition:all 0.15s; color:var(--text); font-family:'Space Grotesk',sans-serif; }
-    .option-btn:hover:not(:disabled) { border-color:var(--accent); background:rgba(124,92,252,0.1); }
-    .option-btn.correct { background:rgba(0,232,135,0.15) !important; border-color:var(--green) !important; color:var(--green); }
-    .option-btn.wrong { background:rgba(255,79,79,0.15) !important; border-color:var(--red) !important; color:var(--red); }
+    .q-counter { font-size:14px; font-weight:700; color:var(--muted); }
+    .cat-tag { background:rgba(0,240,255,0.15); border:1px solid rgba(0,240,255,0.3); color:var(--accent); padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700; }
+    .streak-tag { background:rgba(255,204,0,0.15); color:var(--gold); padding:4px 14px; border-radius:20px; font-size:12px; font-weight:800; display:none; box-shadow:0 0 10px rgba(255,204,0,0.3); }
+    .progress-bar { height:4px; background:rgba(255,255,255,0.05); border-radius:4px; margin-bottom:20px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:4px; transition:width 0.5s ease; box-shadow:0 0 10px var(--accent); }
+    .score-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:20px; }
+    .score-cell { background:var(--surface); border-radius:14px; padding:10px 6px; text-align:center; border:1px solid var(--border); }
+    .score-cell .icon { font-size:16px; }
+    .score-cell .val { font-size:20px; font-weight:800; }
+    .score-cell .lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;}
+    .timer-display { text-align:center; font-size:32px; font-weight:800; margin:12px 0; color:var(--accent); display:none; text-shadow:0 0 15px rgba(0,240,255,0.5); }
+    .timer-display.urgent { color:var(--red); animation:pulse 0.5s ease-in-out infinite alternate; text-shadow:0 0 15px rgba(255,79,79,0.5); }
+    @keyframes pulse { 0%{opacity:1; transform:scale(1)} 100%{opacity:0.6; transform:scale(0.95)} }
+    .question-text { font-size:20px; font-weight:700; line-height:1.5; margin:20px 0; }
+    .option-btn { display:block; width:100%; padding:16px 20px; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; margin-bottom:10px; text-align:left; font-weight:600; font-size:15px; cursor:pointer; transition:all 0.15s; color:var(--text); font-family:'Space Grotesk',sans-serif; position:relative; overflow:hidden; }
+    .option-btn:hover:not(:disabled) { border-color:var(--accent); background:rgba(0,240,255,0.05); transform:translateX(4px); }
+    .option-btn.correct { background:rgba(0,232,135,0.15) !important; border-color:var(--green) !important; color:var(--green); box-shadow:0 0 20px rgba(0,232,135,0.2); }
+    .option-btn.wrong { background:rgba(255,79,79,0.15) !important; border-color:var(--red) !important; color:var(--red); box-shadow:0 0 20px rgba(255,79,79,0.2); }
     .option-btn:disabled { cursor:default; }
 
     /* POWERUPS */
-    .powerup-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
-    .pu-btn { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:8px 4px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:11px; font-weight:700; font-family:'Space Grotesk',sans-serif; color:var(--text); }
-    .pu-btn:hover { border-color:var(--accent); background:rgba(124,92,252,0.1); }
-    .pu-icon { font-size:18px; display:block; margin-bottom:3px; }
+    .powerup-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:16px 0; }
+    .pu-btn { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:10px 4px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:11px; font-weight:700; font-family:'Space Grotesk',sans-serif; color:var(--text); }
+    .pu-btn:hover { border-color:var(--accent2); background:rgba(255,0,85,0.1); transform:translateY(-2px); }
+    .pu-icon { font-size:20px; display:block; margin-bottom:4px; }
     .pu-cost { color:var(--gold); font-size:10px; }
-    .btn-end { width:100%; padding:12px; border-radius:40px; background:rgba(255,79,79,0.12); border:1px solid rgba(255,79,79,0.3); color:var(--red); font-weight:700; font-size:14px; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:8px; transition:all 0.2s; }
+    .btn-end { width:100%; padding:14px; border-radius:40px; background:rgba(255,79,79,0.1); border:1px solid rgba(255,79,79,0.3); color:var(--red); font-weight:700; font-size:14px; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:12px; transition:all 0.2s; }
     .btn-end:hover { background:rgba(255,79,79,0.2); }
 
     /* RESULTS */
     #resultScreen { display:none; text-align:center; }
-    .result-emoji { font-size:64px; display:block; animation:pop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
-    .result-score { font-family:'Syne',sans-serif; font-size:64px; font-weight:800; background:linear-gradient(135deg,#a78bfa,#f472b6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-    .result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0; text-align:center; }
-    .result-cell { background:var(--surface); border-radius:14px; padding:12px; border:1px solid var(--border); }
-    .result-cell .big { font-size:24px; font-weight:800; }
+    .result-emoji { font-size:72px; display:block; animation:pop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+    .result-score { font-family:'Syne',sans-serif; font-size:72px; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
+    .result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0; text-align:center; }
+    .result-cell { background:var(--surface); border-radius:16px; padding:16px; border:1px solid var(--border); }
+    .result-cell .big { font-size:26px; font-weight:800; }
     .result-cell .tiny { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
-    .coins-earned { background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.25); border-radius:12px; padding:10px 16px; margin:12px 0; color:var(--gold); font-weight:700; }
-    .wrong-item { background:rgba(255,79,79,0.07); border:1px solid rgba(255,79,79,0.15); border-radius:12px; padding:12px; margin-bottom:8px; text-align:left; }
-    .wrong-q { font-size:13px; font-weight:700; margin-bottom:6px; }
-    .wrong-yours { color:var(--red); font-size:12px; }
-    .wrong-correct { color:var(--green); font-size:12px; }
-    .btn-share { width:100%; padding:13px; border-radius:40px; background:linear-gradient(135deg,#7c5cfc,#a855f7); color:#fff; font-weight:700; border:none; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:10px; transition:transform 0.2s; }
-    .btn-share:hover { transform:translateY(-1px); }
-    .btn-home { width:100%; padding:13px; border-radius:40px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:8px; }
+    .coins-earned { background:rgba(255,204,0,0.1); border:1px solid rgba(255,204,0,0.3); border-radius:14px; padding:12px 20px; margin:16px 0; color:var(--gold); font-weight:800; font-size:16px; box-shadow:0 0 20px rgba(255,204,0,0.1); }
+    .wrong-item { background:rgba(255,79,79,0.05); border:1px solid rgba(255,79,79,0.15); border-radius:14px; padding:16px; margin-bottom:10px; text-align:left; }
+    .wrong-q { font-size:14px; font-weight:700; margin-bottom:8px; }
+    .wrong-yours { color:var(--red); font-size:13px; margin-bottom:4px;}
+    .wrong-correct { color:var(--green); font-size:13px; font-weight:600;}
+    .btn-share { width:100%; padding:16px; border-radius:40px; background:linear-gradient(135deg,var(--accent),#0077ff); color:#000; font-weight:800; border:none; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:12px; transition:transform 0.2s; }
+    .btn-share:hover { transform:translateY(-2px); }
+    .btn-home { width:100%; padding:16px; border-radius:40px; background:var(--surface-hover); border:1px solid var(--border); color:var(--text); font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:10px; transition:all 0.2s;}
+    .btn-home:hover { background:rgba(255,255,255,0.1); }
 
     /* MODAL */
-    .modal { position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; z-index:999; opacity:0; visibility:hidden; transition:all 0.25s; }
+    .modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; z-index:999; opacity:0; visibility:hidden; transition:all 0.3s; }
     .modal.active { opacity:1; visibility:visible; }
-    .modal-box { background:#0e0e22; border:1px solid var(--border); border-radius:28px; padding:28px 24px; width:90%; max-width:440px; max-height:85vh; overflow-y:auto; }
-    .modal-box h3 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:18px; }
-    .stat-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); font-size:15px; }
+    .modal-box { background:#0a0a15; border:1px solid var(--border); border-radius:28px; padding:28px 24px; width:90%; max-width:440px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.5); }
+    .modal-box h3 { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; margin-bottom:20px; }
+    .stat-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--border); font-size:15px; }
     .stat-row:last-child { border-bottom:none; }
-    .stat-val { font-weight:800; font-size:18px; color:var(--accent); }
-    .btn-close { width:100%; padding:13px; border-radius:40px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:16px; }
-    .daily-q-block { margin:10px 0; padding:14px; background:var(--surface); border-radius:14px; border:1px solid var(--border); text-align:left; }
-    .daily-q-text { font-weight:700; font-size:14px; margin-bottom:10px; }
-    .daily-opt { display:block; cursor:pointer; padding:4px 0; font-size:13px; color:var(--muted); }
-    .daily-opt input { margin-right:8px; accent-color:var(--accent); }
-    .daily-result-block { padding:10px 14px; border-radius:12px; margin:6px 0; font-size:13px; text-align:left; }
+    .stat-val { font-weight:800; font-size:20px; color:var(--accent); }
+    .btn-close { width:100%; padding:14px; border-radius:40px; background:var(--surface-hover); border:1px solid var(--border); color:var(--text); font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:20px; transition:all 0.2s;}
+    .btn-close:hover { background:rgba(255,255,255,0.1); }
+    .daily-q-block { margin:12px 0; padding:16px; background:var(--surface); border-radius:16px; border:1px solid var(--border); text-align:left; }
+    .daily-q-text { font-weight:700; font-size:15px; margin-bottom:12px; }
+    .daily-opt { display:block; cursor:pointer; padding:6px 0; font-size:14px; color:var(--muted); transition:color 0.2s;}
+    .daily-opt:hover { color:var(--text); }
+    .daily-opt input { margin-right:10px; accent-color:var(--accent); transform:scale(1.2); }
+    .daily-result-block { padding:12px 16px; border-radius:12px; margin:8px 0; font-size:14px; text-align:left; }
     .daily-result-block.correct-bg { background:rgba(0,232,135,0.1); border:1px solid rgba(0,232,135,0.2); }
     .daily-result-block.wrong-bg { background:rgba(255,79,79,0.1); border:1px solid rgba(255,79,79,0.2); }
-    .btn-submit-daily { width:100%; padding:13px; border-radius:40px; background:linear-gradient(135deg,#f5c518,#f97316); color:#000; font-weight:800; border:none; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:10px; }
+    .btn-submit-daily { width:100%; padding:16px; border-radius:40px; background:linear-gradient(135deg,var(--gold),#ff8800); color:#000; font-weight:800; border:none; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-top:12px; transition:transform 0.2s;}
+    .btn-submit-daily:hover { transform:translateY(-2px); }
+
+    /* LEADERBOARD SPECIFIC */
+    .podium-row { display:flex; justify-content:center; align-items:flex-end; gap:10px; margin:20px 0 30px; }
+    .podium-item { text-align:center; flex:1; }
+    .podium-avatar { width:50px; height:50px; border-radius:50%; margin:0 auto 8px; border:3px solid; object-fit:cover; }
+    .podium-name { font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .podium-score { font-size:11px; color:var(--gold); font-weight:800; }
+    .podium-bar { background:var(--surface); border-radius:10px 10px 0 0; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:rgba(255,255,255,0.2); }
+    .podium-1 .podium-avatar { border-color:var(--gold); width:70px; height:70px; box-shadow:0 0 20px rgba(255,204,0,0.3);}
+    .podium-1 .podium-bar { height:90px; background:linear-gradient(to top, rgba(255,204,0,0.1), transparent); border-color:var(--gold); color:var(--gold); }
+    .podium-2 .podium-avatar { border-color:#c0c0c0; }
+    .podium-2 .podium-bar { height:70px; background:linear-gradient(to top, rgba(192,192,192,0.1), transparent); border-color:#c0c0c0; }
+    .podium-3 .podium-avatar { border-color:#cd7f32; }
+    .podium-3 .podium-bar { height:50px; background:linear-gradient(to top, rgba(205,127,50,0.1), transparent); border-color:#cd7f32; }
+    
+    .lb-row { display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid var(--border); }
+    .lb-rank { font-weight:800; width:24px; text-align:center; color:var(--muted); }
+    .lb-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+    .lb-name { flex:1; font-weight:600; font-size:14px; text-align:left; }
+    .lb-score { font-weight:800; color:var(--accent); }
 
     /* TOAST */
-    .toast { position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(20px); background:#1c1c35; border:1px solid var(--border); padding:10px 22px; border-radius:40px; font-weight:600; font-size:14px; z-index:1100; opacity:0; transition:all 0.25s; pointer-events:none; white-space:nowrap; }
+    .toast { position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(20px); background:rgba(20,20,35,0.95); border:1px solid var(--accent); padding:12px 24px; border-radius:40px; font-weight:600; font-size:14px; z-index:1100; opacity:0; transition:all 0.3s; pointer-events:none; white-space:nowrap; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
     .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-    /* RESPONSIVE */
     @media(max-width:420px) {
-      .cat-name { font-size:11px; }
-      .cat-icon { font-size:24px; }
-      .question-text { font-size:17px; }
-      .pu-btn { font-size:10px; }
+      .cat-name { font-size:12px; }
+      .cat-icon { font-size:26px; }
+      .question-text { font-size:18px; }
+      .pu-btn { font-size:10px; padding:8px 2px; }
+      .podium-bar { font-size:18px; }
     }
   </style>
 </head>
@@ -187,7 +220,7 @@
     <div class="logo">⚡ Quiz<span>ania</span></div>
     <div class="topright">
       <div class="coins">🪙 <span id="coinsDisplay">0</span></div>
-      <img class="avatar" id="avatarImg" src="" onclick="toggleMenu()" id="avatarWrap">
+      <img class="avatar" id="avatarImg" src="" onclick="toggleMenu()">
     </div>
   </div>
 
@@ -195,7 +228,7 @@
   <div id="loginScreen" class="card">
     <span class="login-icon">🏆</span>
     <h2>Quizania</h2>
-    <p>Challenge your knowledge, unlock categories, earn coins!</p>
+    <p>Join the Weekly Championship. Challenge your knowledge, unlock categories, and dominate the leaderboard!</p>
     <button class="btn-google" onclick="loginWithGoogle()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Sign in with Google
@@ -205,6 +238,19 @@
 
   <!-- DASHBOARD -->
   <div id="dashboard" style="display:none;">
+    
+    <!-- Weekly Mission -->
+    <div class="mission-box" id="missionBox">
+      <div class="mission-header">
+        <span>🎯 Weekly Mission</span>
+        <span id="missionReward">+200 🪙</span>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" id="missionText">Answer 50 questions this week.</div>
+      <div class="mission-progress-bg">
+        <div class="mission-progress-fill" id="missionProgress"></div>
+      </div>
+    </div>
+
     <!-- Language -->
     <div class="card">
       <div class="card-title">🌐 Language</div>
@@ -250,7 +296,34 @@
     </div>
 
     <button class="btn-daily" onclick="openDailyQuiz()">📅 Daily Quiz — Earn 50 🪙</button>
+    <button class="btn-champ" onclick="showChampionship()">🏆 Weekly Championship</button>
     <button class="btn-stats" onclick="showStats()">📊 My Statistics</button>
+  </div>
+
+  <!-- CHAMPIONSHIP SCREEN -->
+  <div id="champScreen" style="display:none;">
+    <div class="card" style="padding:20px;">
+      <div class="quiz-header" style="margin-bottom:20px;">
+        <button onclick="backToDashboard()" style="background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer;">←</button>
+        <span class="cat-tag" style="background:linear-gradient(135deg,var(--gold),#ff8800); color:#000; border:none;">🏆 Weekly Championship</span>
+        <div style="width:20px;"></div>
+      </div>
+      
+      <div style="text-align:center; margin-bottom:20px;">
+        <p style="font-size:13px; color:var(--muted);">Resets every Monday at 00:00. Top 3 get massive coin bonuses!</p>
+      </div>
+
+      <!-- Podium -->
+      <div class="podium-row" id="podiumRow">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Leaderboard List -->
+      <div id="leaderboardList">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+    <button class="btn-home" onclick="backToDashboard()">🏠 Back to Home</button>
   </div>
 
   <!-- QUIZ SCREEN -->
@@ -291,8 +364,8 @@
       <div class="result-cell"><div class="big" style="color:var(--red)" id="finalWrong">0</div><div class="tiny">Wrong</div></div>
       <div class="result-cell"><div class="big" style="color:var(--muted)" id="finalSkip">0</div><div class="tiny">Skipped</div></div>
     </div>
-    <div class="coins-earned">🪙 +<span id="coinsEarned">0</span> coins earned this game!</div>
-    <div style="font-weight:700;margin:14px 0 8px;text-align:left;">❌ Wrong Answers</div>
+    <div class="coins-earned">🪙 +<span id="coinsEarned">0</span> coins earned!</div>
+    <div style="font-weight:700;margin:16px 0 8px;text-align:left;font-size:14px;">❌ Wrong Answers</div>
     <div id="wrongList" style="max-height:240px;overflow-y:auto;"></div>
     <button class="btn-share" onclick="shareScore()">📤 Share Score</button>
     <button class="btn-home" onclick="backToDashboard()">🏠 Back to Home</button>
@@ -306,7 +379,7 @@
     <div class="stat-row"><span>🎮 Total Games</span><span class="stat-val" id="totalGames">0</span></div>
     <div class="stat-row"><span>✅ Total Correct</span><span class="stat-val" id="totalCorrect">0</span></div>
     <div class="stat-row"><span>❌ Total Wrong</span><span class="stat-val" id="totalWrong">0</span></div>
-    <div class="stat-row"><span>🪙 Total Coins</span><span class="stat-val" id="totalCoinsEarned">0</span></div>
+    <div class="stat-row"><span>🪙 Total Coins Earned</span><span class="stat-val" id="totalCoinsEarned">0</span></div>
     <div class="stat-row"><span>🔥 Best Streak</span><span class="stat-val" id="bestStreak">0</span></div>
     <button class="btn-close" onclick="document.getElementById('statsModal').classList.remove('active')">Close</button>
   </div>
@@ -316,7 +389,7 @@
 <div class="modal" id="dailyModal">
   <div class="modal-box">
     <h3>📅 Daily Quiz</h3>
-    <div id="dailyStatus" style="color:var(--muted);font-size:14px;margin-bottom:12px;"></div>
+    <div id="dailyStatus" style="color:var(--muted);font-size:14px;margin-bottom:16px;"></div>
     <div id="dailyQuestions"></div>
     <div id="dailyFeedback"></div>
     <button class="btn-close" onclick="closeDailyModal()">Close</button>
@@ -325,11 +398,12 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script>
-// ─── FIREBASE (unchanged) ───────────────────────────────────────
+// ─── FIREBASE CONFIG ───────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyCkSNiFrju355cCtsby_SHCJuTfMkDbNQM",
   authDomain: "quiz-game-app-ba331.firebaseapp.com",
@@ -349,7 +423,12 @@ let currentQuestions = [], currentQuestionObj = null, qIndex = 0;
 let right = 0, wrong = 0, skipped = 0, score = 0, streak = 0, bestStreakThisGame = 0;
 let wrongAnswersList = [], timerInterval = null, timeLeft = 0;
 let powerupActive = { doubleCoins: false };
+
+// Stats & Championship
 let stats = { totalGames:0, totalCorrect:0, totalWrong:0, totalCoinsEarned:0, bestStreak:0 };
+let weeklyStats = { score: 0, questionsAnswered: 0, weekId: getWeekId() };
+let dailyLoginDate = localStorage.getItem('lastLoginDate');
+let dailyLoginStreak = parseInt(localStorage.getItem('loginStreak') || '0');
 
 const allCategories = [
   { name:"General Knowledge", key:"GK",         locked:false, icon:"🌍" },
@@ -365,39 +444,119 @@ const allCategories = [
 ];
 
 // ─── UTILS ───────────────────────────────────────────────────────
+function getWeekId() {
+  const now = new Date();
+  const onejan = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil((((now - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${week}`;
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.innerText = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-  if (navigator.vibrate) navigator.vibrate(80);
+  setTimeout(() => t.classList.remove('show'), 2500);
+  if (navigator.vibrate) navigator.vibrate(60);
 }
 function updateCoinUI() { document.getElementById('coinsDisplay').innerText = coins; }
+
 function saveUserData() {
-  const payload = { coins, unlockedCategories, stats };
-  if (currentUser) db.collection('users').doc(currentUser.uid).set(payload, { merge:true });
-  else localStorage.setItem('quizania_guest', JSON.stringify(payload));
+  const payload = { 
+    coins, 
+    unlockedCategories, 
+    stats, 
+    weeklyStats,
+    name: currentUser ? (currentUser.displayName || "Player") : "Guest",
+    photoURL: currentUser ? currentUser.photoURL : ""
+  };
+  if (currentUser) {
+    db.collection('users').doc(currentUser.uid).set(payload, { merge:true });
+  } else {
+    localStorage.setItem('quizania_guest', JSON.stringify(payload));
+  }
 }
+
 function loadGuestData() {
   const raw = localStorage.getItem('quizania_guest');
-  if (raw) { const g = JSON.parse(raw); coins=g.coins||50; unlockedCategories=g.unlockedCategories||defaultUnlocked(); stats=g.stats||defaultStats(); }
-  else { coins=50; unlockedCategories=defaultUnlocked(); stats=defaultStats(); }
+  if (raw) { 
+    const g = JSON.parse(raw); 
+    coins = g.coins || 50; 
+    unlockedCategories = g.unlockedCategories || defaultUnlocked(); 
+    stats = g.stats || defaultStats(); 
+    weeklyStats = g.weeklyStats || { score: 0, questionsAnswered: 0, weekId: getWeekId() };
+    if(weeklyStats.weekId !== getWeekId()) { weeklyStats = { score: 0, questionsAnswered: 0, weekId: getWeekId() }; }
+  } else { 
+    coins = 50; 
+    unlockedCategories = defaultUnlocked(); 
+    stats = defaultStats(); 
+    weeklyStats = { score: 0, questionsAnswered: 0, weekId: getWeekId() };
+  }
   updateCoinUI();
+  updateMissionUI();
 }
+
 async function loadUserData(uid) {
   const doc = await db.collection('users').doc(uid).get();
-  if (doc.exists) { coins=doc.data().coins||50; unlockedCategories=doc.data().unlockedCategories||defaultUnlocked(); stats=doc.data().stats||defaultStats(); }
-  else { coins=50; unlockedCategories=defaultUnlocked(); stats=defaultStats(); }
+  if (doc.exists) {
+    const d = doc.data();
+    coins = d.coins || 50;
+    unlockedCategories = d.unlockedCategories || defaultUnlocked();
+    stats = d.stats || defaultStats();
+    weeklyStats = d.weeklyStats || { score: 0, questionsAnswered: 0, weekId: getWeekId() };
+    
+    // Weekly Reset Logic
+    if (weeklyStats.weekId !== getWeekId()) {
+      weeklyStats = { score: 0, questionsAnswered: 0, weekId: getWeekId() };
+      saveUserData();
+    }
+  } else {
+    coins = 50;
+    unlockedCategories = defaultUnlocked();
+    stats = defaultStats();
+    weeklyStats = { score: 0, questionsAnswered: 0, weekId: getWeekId() };
+    saveUserData();
+  }
   updateCoinUI();
+  updateMissionUI();
 }
+
 function defaultUnlocked() { return allCategories.filter(c=>!c.locked).map(c=>c.key); }
 function defaultStats() { return { totalGames:0, totalCorrect:0, totalWrong:0, totalCoinsEarned:0, bestStreak:0 }; }
+
 function updateStatsAfterGame(r, w, earned, streak) {
   stats.totalGames++; stats.totalCorrect+=r; stats.totalWrong+=w; stats.totalCoinsEarned+=earned;
   if (streak > stats.bestStreak) stats.bestStreak = streak;
+  
+  // Update Weekly Stats
+  weeklyStats.score += score;
+  weeklyStats.questionsAnswered += (r + w + skipped);
+  
   saveUserData();
+  updateMissionUI();
 }
 
-// ─── AUTH ─────────────────────────────────────────────────────────
+function updateMissionUI() {
+  const goal = 50;
+  const progress = Math.min((weeklyStats.questionsAnswered / goal) * 100, 100);
+  document.getElementById('missionProgress').style.width = progress + '%';
+  document.getElementById('missionText').innerText = `Answer ${weeklyStats.questionsAnswered}/${goal} questions this week.`;
+  
+  if (weeklyStats.questionsAnswered >= goal && !localStorage.getItem('missionClaimed_' + getWeekId())) {
+     document.getElementById('missionReward').innerHTML = '🎁 Claim!';
+     document.getElementById('missionBox').onclick = () => {
+        coins += 200; updateCoinUI(); saveUserData();
+        localStorage.setItem('missionClaimed_' + getWeekId(), 'true');
+        document.getElementById('missionReward').innerHTML = '✅ Done';
+        showToast("🎉 Mission Complete! +200 Coins");
+     };
+  } else if (localStorage.getItem('missionClaimed_' + getWeekId())) {
+     document.getElementById('missionReward').innerHTML = '✅ Done';
+  } else {
+     document.getElementById('missionReward').innerHTML = '+200 🪙';
+     document.getElementById('missionBox').onclick = null;
+  }
+}
+
+// ─── AUTH & DAILY LOGIN ──────────────────────────────────────────
 function loginWithGoogle() {
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
       .then(r => onLoginSuccess(r.user))
@@ -405,6 +564,7 @@ function loginWithGoogle() {
 }
 function guestLogin() {
   currentUser = null; loadGuestData();
+  checkDailyLogin();
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   renderCategories();
@@ -412,8 +572,10 @@ function guestLogin() {
 function onLoginSuccess(user) {
   currentUser = user;
   const av = document.getElementById('avatarImg');
-  av.src = user.photoURL || ''; av.style.display = 'block';
+  av.src = user.photoURL || 'https://via.placeholder.com/150'; 
+  av.style.display = 'block';
   loadUserData(user.uid).then(() => {
+    checkDailyLogin();
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     renderCategories();
@@ -424,13 +586,33 @@ function toggleMenu() {
     auth.signOut(); currentUser = null;
     document.getElementById('avatarImg').style.display = 'none';
     document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'block';
     document.getElementById('resultScreen').style.display = 'none';
+    document.getElementById('champScreen').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'block';
   }
 }
 auth.onAuthStateChanged(u => { if (u) onLoginSuccess(u); });
 
-// ─── CATEGORIES ───────────────────────────────────────────────────
+function checkDailyLogin() {
+  const today = new Date().toISOString().slice(0,10);
+  if (dailyLoginDate !== today) {
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = yesterday.toISOString().slice(0,10);
+    
+    if (dailyLoginDate === yStr) { dailyLoginStreak++; }
+    else { dailyLoginStreak = 1; }
+    
+    localStorage.setItem('lastLoginDate', today);
+    localStorage.setItem('loginStreak', dailyLoginStreak);
+    
+    // Reward
+    const reward = Math.min(dailyLoginStreak * 10, 50);
+    coins += reward; updateCoinUI(); saveUserData();
+    setTimeout(() => showToast(`🔥 Daily Login Streak: ${dailyLoginStreak} days! +${reward}🪙`), 1500);
+  }
+}
+
+// ─── CATEGORIES & MODES ──────────────────────────────────────────
 function renderCategories() {
   const grid = document.getElementById('categoryGrid');
   grid.innerHTML = '';
@@ -461,8 +643,7 @@ function setMode(mode, el) {
   selectedMode = mode;
   document.querySelectorAll('.mode-card').forEach(m => m.classList.remove('selected'));
   el.classList.add('selected');
-  const ts = document.getElementById('timeSettings');
-  ts.style.display = mode === 'timebound' ? 'flex' : 'none';
+  document.getElementById('timeSettings').style.display = mode === 'timebound' ? 'flex' : 'none';
   checkStart();
 }
 function checkStart() {
@@ -477,13 +658,18 @@ async function fetchQuestions(category, lang) {
     const qs = [];
     snap.forEach(d => {
       const data = d.data();
+      // The perfect fallback logic matching your Firebase screenshot
       const q = data[`question_${sfx}`] || data.question_en;
       const opts = data[`options_${sfx}`] || data.options_en;
       if (q && opts && opts.length >= 2) qs.push({ q, opts, ans: data.answer });
     });
     if (qs.length) return qs;
-  } catch(e) {}
-  return [{ q:`Sample ${category} question`, opts:["Option A","Option B","Option C","Option D"], ans:0 }];
+  } catch(e) { console.error("Firebase Error:", e); }
+  
+  // Fallback if no questions found
+  return [
+    { q:`No ${category} questions found in Firebase yet!`, opts:["Add some to the DB","Option B","Option C","Option D"], ans:0 }
+  ];
 }
 
 // ─── QUIZ ENGINE ─────────────────────────────────────────────────
@@ -492,13 +678,19 @@ async function startQuiz() {
   right=0; wrong=0; skipped=0; score=0; streak=0; qIndex=0; bestStreakThisGame=0;
   wrongAnswersList = []; powerupActive.doubleCoins = false;
   const qCount = selectedMode==='timebound' ? parseInt(document.getElementById('qCountSel').value) : 99999;
+  
+  // Loading state
+  document.getElementById('startQuizBtn').innerText = "Loading...";
   const all = await fetchQuestions(selectedCategory, currentLang);
+  document.getElementById('startQuizBtn').innerText = "🚀 Start Quiz";
+  
   currentQuestions = all.sort(()=>Math.random()-0.5).slice(0, qCount);
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('quizScreen').style.display = 'block';
   document.getElementById('catName').innerText = selectedCategory;
   nextQuestion();
 }
+
 function updateQuizUI() {
   document.getElementById('rightCount').innerText = right;
   document.getElementById('wrongCount').innerText = wrong;
@@ -507,6 +699,7 @@ function updateQuizUI() {
   const st = document.getElementById('streakDisplay');
   if (streak >= 3) { st.style.display='inline-flex'; st.innerText=`🔥 ${streak}`; }
   else st.style.display = 'none';
+  
   if (selectedMode==='timebound' && currentQuestions.length) {
     document.getElementById('progressFill').style.width = (qIndex/currentQuestions.length*100)+'%';
     document.getElementById('qCounter').innerText = `Q${qIndex+1} / ${currentQuestions.length}`;
@@ -514,11 +707,14 @@ function updateQuizUI() {
     document.getElementById('qCounter').innerText = `Q${qIndex+1}`;
   }
 }
+
 function nextQuestion() {
   if (timerInterval) clearInterval(timerInterval);
   if (!currentQuestions.length || qIndex >= currentQuestions.length) { endQuiz(); return; }
+  
   currentQuestionObj = currentQuestions[qIndex];
   document.getElementById('questionText').innerText = currentQuestionObj.q;
+  
   const optsDiv = document.getElementById('optionsContainer');
   optsDiv.innerHTML = '';
   currentQuestionObj.opts.forEach((opt, i) => {
@@ -528,6 +724,7 @@ function nextQuestion() {
     btn.onclick = () => checkAnswer(i, btn);
     optsDiv.appendChild(btn);
   });
+
   if (selectedMode === 'timebound') {
     timeLeft = parseInt(document.getElementById('timePerQSel').value);
     const td = document.getElementById('timerDisplay');
@@ -540,22 +737,30 @@ function nextQuestion() {
       if (timeLeft <= 0) {
         clearInterval(timerInterval);
         skipped++; updateQuizUI(); showToast("⏰ Time's up!");
-        qIndex++; setTimeout(nextQuestion, 300);
+        qIndex++; setTimeout(nextQuestion, 500);
       }
     }, 1000);
-  } else document.getElementById('timerDisplay').style.display = 'none';
+  } else {
+    document.getElementById('timerDisplay').style.display = 'none';
+  }
   updateQuizUI();
 }
+
 function checkAnswer(idx, btn) {
   if (timerInterval) clearInterval(timerInterval);
   document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
   const correct = currentQuestionObj.ans;
+  
   if (idx === correct) {
     btn.classList.add('correct');
     right++; streak++; if (streak > bestStreakThisGame) bestStreakThisGame = streak;
     let earn = 5 + (streak >= 3 ? streak*2 : 0);
-    if (powerupActive.doubleCoins) { earn *= 2; powerupActive.doubleCoins = false; showToast(`💰 Double! +${earn}🪙`); }
-    else showToast(`+${earn}🪙`);
+    
+    if (powerupActive.doubleCoins) { 
+      earn *= 2; powerupActive.doubleCoins = false; 
+      showToast(`💰 Double! +${earn}🪙`); 
+    } else showToast(`+${earn}🪙`);
+    
     coins += earn; score += 10; updateCoinUI();
     if (navigator.vibrate) navigator.vibrate(40);
   } else {
@@ -568,27 +773,38 @@ function checkAnswer(idx, btn) {
   }
   updateQuizUI();
   qIndex++;
-  setTimeout(nextQuestion, 1300);
+  setTimeout(nextQuestion, 1500);
 }
+
 function usePowerup(type) {
   const cost = { fifty:20, skip:10, change:15, double:25 }[type];
   if (coins < cost) { showToast(`Need ${cost}🪙`); return; }
   coins -= cost; updateCoinUI(); saveUserData();
-  if (type==='skip') { if(timerInterval)clearInterval(timerInterval); skipped++; updateQuizUI(); qIndex++; setTimeout(nextQuestion,200); }
-  else if (type==='change') { if(timerInterval)clearInterval(timerInterval); nextQuestion(); }
-  else if (type==='fifty') {
+  
+  if (type==='skip') { 
+    if(timerInterval)clearInterval(timerInterval); 
+    skipped++; updateQuizUI(); qIndex++; setTimeout(nextQuestion,300); 
+  } else if (type==='change') { 
+    if(timerInterval)clearInterval(timerInterval); 
+    nextQuestion(); 
+  } else if (type==='fifty') {
     const btns = document.querySelectorAll('.option-btn');
     const correctIdx = currentQuestionObj.ans;
     const toRemove = [...Array(btns.length).keys()].filter(i=>i!==correctIdx).sort(()=>0.5-Math.random()).slice(0,2);
     toRemove.forEach(i => btns[i].style.opacity='0.2');
     showToast("⚡ 50:50 activated!");
-  } else if (type==='double') { powerupActive.doubleCoins=true; showToast("💰 Next correct earns double!"); }
+  } else if (type==='double') { 
+    powerupActive.doubleCoins=true; 
+    showToast("💰 Next correct earns double!"); 
+  }
 }
+
 function endQuiz() {
   if (timerInterval) clearInterval(timerInterval);
   const earned = right * 5;
   coins += earned; updateCoinUI(); saveUserData();
   updateStatsAfterGame(right, wrong, earned, bestStreakThisGame);
+  
   const pct = currentQuestions.length ? Math.round(right/currentQuestions.length*100) : 0;
   document.getElementById('resultEmoji').innerText = pct>=80?'🏆':pct>=50?'🎉':'💪';
   document.getElementById('finalScore').innerText = score;
@@ -596,9 +812,10 @@ function endQuiz() {
   document.getElementById('finalWrong').innerText = wrong;
   document.getElementById('finalSkip').innerText = skipped;
   document.getElementById('coinsEarned').innerText = earned;
+  
   const wl = document.getElementById('wrongList');
   if (!wrongAnswersList.length) {
-    wl.innerHTML = '<div style="color:var(--green);padding:12px;text-align:center;">✨ Perfect score! No wrong answers!</div>';
+    wl.innerHTML = '<div style="color:var(--green);padding:16px;text-align:center;font-weight:700;">✨ Perfect score! No wrong answers!</div>';
   } else {
     wl.innerHTML = wrongAnswersList.map(w=>`
       <div class="wrong-item">
@@ -607,19 +824,108 @@ function endQuiz() {
         <div class="wrong-correct">✅ Correct: ${w.correctAnswer}</div>
       </div>`).join('');
   }
+  
   document.getElementById('quizScreen').style.display = 'none';
   document.getElementById('resultScreen').style.display = 'block';
 }
+
 function backToDashboard() {
   document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('champScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   selectedMode = null; selectedCategory = null;
   renderCategories(); checkStart();
 }
+
 function shareScore() {
   const msg = `I scored ${score} pts in Quizania! ✅${right} ❌${wrong} ⏭️${skipped}. Can you beat me? ⚡`;
   if (navigator.share) navigator.share({ title:'Quizania Score', text:msg });
   else { navigator.clipboard.writeText(msg); showToast("📋 Copied to clipboard!"); }
+}
+
+// ─── CHAMPIONSHIP LEADERBOARD ────────────────────────────────────
+async function showChampionship() {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('champScreen').style.display = 'block';
+  
+  const podium = document.getElementById('podiumRow');
+  const list = document.getElementById('leaderboardList');
+  podium.innerHTML = '<div style="color:var(--muted); font-size:13px;">Loading leaderboard...</div>';
+  list.innerHTML = '';
+
+  // Fetch top 10 users for this week
+  try {
+    const snap = await db.collection('users').orderBy('weeklyStats.score', 'desc').limit(10).get();
+    let topUsers = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.weeklyStats && d.weeklyStats.weekId === getWeekId()) {
+        topUsers.push({
+          name: d.name || "Anonymous",
+          score: d.weeklyStats.score || 0,
+          avatar: d.photoURL || 'https://via.placeholder.com/150',
+          isMe: currentUser && doc.id === currentUser.uid
+        });
+      }
+    });
+
+    // If less than 3 users, add dummy data for visual effect
+    if (topUsers.length < 3) {
+      topUsers = [
+        ...topUsers,
+        { name: "QuizMaster99", score: 450, avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=1" },
+        { name: "TriviaKing", score: 320, avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=2" },
+        { name: "SmartPants", score: 210, avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=3" }
+      ].slice(0, 3);
+    }
+
+    renderLeaderboard(topUsers);
+    
+  } catch (e) {
+    // Fallback if Firebase index is not built or offline
+    console.error(e);
+    podium.innerHTML = '';
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted);">Could not load global leaderboard. Play to secure your spot!</div>';
+  }
+}
+
+function renderLeaderboard(users) {
+  const podium = document.getElementById('podiumRow');
+  const list = document.getElementById('leaderboardList');
+  podium.innerHTML = ''; list.innerHTML = '';
+
+  // Podium (Top 3)
+  const order = [1, 0, 2]; // 2nd, 1st, 3rd
+  if (users.length > 0) {
+    order.forEach(i => {
+      const u = users[i];
+      if (!u) return;
+      const div = document.createElement('div');
+      div.className = `podium-item podium-${i+1}`;
+      div.innerHTML = `
+        <img src="${u.avatar}" class="podium-avatar">
+        <div class="podium-name" style="${u.isMe ? 'color:var(--accent);' : ''}">${u.name}</div>
+        <div class="podium-score">${u.score} WP</div>
+        <div class="podium-bar">${i+1}</div>
+      `;
+      podium.appendChild(div);
+    });
+  }
+
+  // List (4-10)
+  users.forEach((u, index) => {
+    if (index < 3) return;
+    const div = document.createElement('div');
+    div.className = 'lb-row';
+    if (u.isMe) div.style.background = 'rgba(0, 240, 255, 0.1)';
+    div.innerHTML = `
+      <div class="lb-rank">#${index+1}</div>
+      <img src="${u.avatar}" class="lb-avatar">
+      <div class="lb-name" style="${u.isMe ? 'color:var(--accent); font-weight:800;' : ''}">${u.name} ${u.isMe ? '(You)' : ''}</div>
+      <div class="lb-score">${u.score} WP</div>
+    `;
+    list.appendChild(div);
+  });
 }
 
 // ─── STATS ───────────────────────────────────────────────────────
@@ -640,6 +946,7 @@ async function openDailyQuiz() {
   const fbDiv = document.getElementById('dailyFeedback');
   const today = new Date().toISOString().slice(0,10);
   const last = localStorage.getItem('dailyQuizDate');
+
   if (last === today) {
     const now = new Date(), midnight = new Date(now); midnight.setHours(24,0,0,0);
     const diff = Math.floor((midnight-now)/1000);
@@ -648,21 +955,26 @@ async function openDailyQuiz() {
     qDiv.innerHTML = ''; fbDiv.innerHTML = '';
     modal.classList.add('active'); return;
   }
+
   statusDiv.innerText = "🎯 Answer 5 questions. Get 3+ correct to earn 50🪙!";
+  qDiv.innerHTML = 'Loading questions...';
+  modal.classList.add('active');
+
   let allQ = [];
   try {
-    const snap = await db.collection('questions').limit(20).get();
+    const snap = await db.collection('questions').limit(30).get();
     snap.forEach(d => {
       const data = d.data(), sfx=currentLang==='Hindi'?'hi':currentLang==='Marathi'?'mr':'en';
       const q=data[`question_${sfx}`]||data.question_en, opts=data[`options_${sfx}`]||data.options_en;
       if(q&&opts) allQ.push({ q, opts, ans:data.answer });
     });
   } catch(e) {}
-  if (allQ.length < 5) allQ = [
-    { q:"Sample Q1", opts:["A","B","C","D"], ans:0 },{ q:"Sample Q2", opts:["A","B","C","D"], ans:1 },
-    { q:"Sample Q3", opts:["A","B","C","D"], ans:2 },{ q:"Sample Q4", opts:["A","B","C","D"], ans:3 },
-    { q:"Sample Q5", opts:["A","B","C","D"], ans:0 }
-  ];
+
+  if (allQ.length < 5) {
+    qDiv.innerHTML = '<div style="color:var(--red);text-align:center;padding:20px;">Not enough questions in Firebase yet!</div>';
+    return;
+  }
+
   const dailyQs = allQ.sort(()=>Math.random()-0.5).slice(0,5);
   qDiv.innerHTML = '';
   dailyQs.forEach((q, i) => {
@@ -672,6 +984,7 @@ async function openDailyQuiz() {
       q.opts.map((o,idx)=>`<label class="daily-opt"><input type="radio" name="dq${i}" value="${idx}"> ${o}</label>`).join('');
     qDiv.appendChild(div);
   });
+
   const sub = document.createElement('button');
   sub.className = 'btn-submit-daily'; sub.innerText = '✅ Submit Answers';
   sub.onclick = () => {
@@ -699,8 +1012,8 @@ async function openDailyQuiz() {
   };
   qDiv.appendChild(sub);
   fbDiv.innerHTML = '';
-  modal.classList.add('active');
 }
+
 function closeDailyModal() {
   document.getElementById('dailyModal').classList.remove('active');
   document.getElementById('dailyFeedback').innerHTML = '';
